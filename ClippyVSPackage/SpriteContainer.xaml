@@ -4,7 +4,7 @@
         Title="SpriteContainer" Height="93" Width="124" Background="{x:Null}" AllowsTransparency="True" WindowStyle="None" HorizontalAlignment="Center" HorizontalContentAlignment="Center" MouseDown="Window_MouseDown" Topmost="True" IsTabStop="False" Closing="ClippySpriteContainer_Closing">
     <Window.Resources>
         <ContextMenu x:Key="cmButton">
-            <MenuItem x:Name="cmdRandomIdle" Header="Idle" />
+			<MenuItem x:Name="cmdRandomIdle" Header="Idle" Click="cmdIdle_Click" />
             <Separator />
             <MenuItem x:Name="cmdClose" Header="Please, leave me alone" Click="cmdClose_Click"  />
         </ContextMenu>

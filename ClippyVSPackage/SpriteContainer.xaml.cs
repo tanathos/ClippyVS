@@ -6,11 +6,13 @@ using Microsoft.VisualStudio.Shell.Settings;
 using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,6 +22,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -28,7 +31,7 @@ namespace Recoding.ClippyVSPackage
     /// </summary>
     public partial class SpriteContainer : Window
     {
-        private Clippy _clippy;
+        private Clippy _clippy { get; set; }
 
         private Package _package;
 
@@ -87,11 +90,46 @@ namespace Recoding.ClippyVSPackage
 
         private void cmdClose_Click(object sender, RoutedEventArgs e)
         {
-            _clippy.StartAnimation(ClippyAnimationTypes.GoodBye);
+            var window = this;
 
-            this.Owner.Focus();
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                _clippy.StartAnimation(ClippyAnimationTypes.GoodBye, true);
+            }), DispatcherPriority.Send);
 
-            this.Close();
+            BackgroundWorker bgWorker = new BackgroundWorker();
+            bgWorker.DoWork += (a, r) =>
+            {
+                while (_clippy.IsAnimating) { }
+
+                this.Dispatcher.Invoke(new Action(() =>
+                {
+                    window.Owner.Focus();
+
+                    window.Close();
+                    
+                }), DispatcherPriority.Send);
+                
+            };
+            bgWorker.RunWorkerAsync();
+
+            //await this.Dispatcher.BeginInvoke(new Action(() =>
+            //{
+            //    Thread.Sleep(2000);
+
+            //    this.Owner.Focus();
+
+            //    this.Close();
+            //}), DispatcherPriority.ContextIdle);
+
+        }
+
+        private void cmdIdle_Click(object sender, RoutedEventArgs e)
+        {
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                _clippy.StartAnimation(ClippyAnimationTypes.IdleAtom);
+            }));
         }
 
         private void ClippySpriteContainer_Closing(object sender, System.ComponentModel.CancelEventArgs e)

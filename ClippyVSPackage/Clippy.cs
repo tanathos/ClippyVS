@@ -59,7 +59,7 @@ namespace Recoding.ClippyVSPackage
 
         private static int IdleAnimationTimeout = 45;
 
-        private bool IsAnimating = false;
+        public bool IsAnimating { get; set; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
