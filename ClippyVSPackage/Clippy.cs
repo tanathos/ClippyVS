@@ -4,9 +4,7 @@ using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -64,20 +62,20 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The list of couples of Columns/Rows double animations
         /// </summary>
-        private static Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> WPFAnimations;
+        private static Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> Animations;
 
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<ClippyAnimationTypes> IdleAnimations = new List<ClippyAnimationTypes>() { 
-            ClippyAnimationTypes.Idle1_1, 
-            ClippyAnimationTypes.IdleRopePile, 
-            ClippyAnimationTypes.IdleAtom, 
-            ClippyAnimationTypes.IdleEyeBrowRaise, 
-            ClippyAnimationTypes.IdleFingerTap, 
-            ClippyAnimationTypes.IdleHeadScratch, 
-            ClippyAnimationTypes.IdleSideToSide, 
-            ClippyAnimationTypes.IdleSnooze };
+        public static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() { 
+            ClippyAnimations.Idle1_1, 
+            ClippyAnimations.IdleRopePile, 
+            ClippyAnimations.IdleAtom, 
+            ClippyAnimations.IdleEyeBrowRaise, 
+            ClippyAnimations.IdleFingerTap, 
+            ClippyAnimations.IdleHeadScratch, 
+            ClippyAnimations.IdleSideToSide, 
+            ClippyAnimations.IdleSnooze };
 
         /// <summary>
         /// The time dispatcher to perform the animations in a random way
@@ -107,7 +105,7 @@ namespace Recoding.ClippyVSPackage
             canvas.Children.Clear();
             canvas.Children.Add(clippedImage);
 
-            if (WPFAnimations == null)
+            if (Animations == null)
                 RegisterAnimations();
 
             dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(SDTE));
@@ -130,7 +128,7 @@ namespace Recoding.ClippyVSPackage
 
             List<Animation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Animation>>(StreamToString(info.Stream));
 
-            WPFAnimations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
+            Animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
 
             foreach (Animation animation in storedAnimations)
             {
@@ -164,19 +162,24 @@ namespace Recoding.ClippyVSPackage
                     yDoubleAnimation.KeyFrames.Add(yKeyFrame);
                 }
 
-                WPFAnimations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
+                Animations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
 
                 xDoubleAnimation.Completed += xDoubleAnimation_Completed;
             }
         }
 
+        /// <summary>
+        /// Callback to execute at the end of an animation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void xDoubleAnimation_Completed(object sender, EventArgs e)
         {
             IsAnimating = false;
         }
 
         /// <summary>
-        /// Registers a function to perform a subset of animations randomly
+        /// Registers a function to perform a subset of animations randomly (the idle ones)
         /// </summary>
         private void RegisterIdleRandomAnimations() 
         {
@@ -199,14 +202,14 @@ namespace Recoding.ClippyVSPackage
         /// Start a specific animation
         /// </summary>
         /// <param name="animationType"></param>
-        public void StartAnimation(ClippyAnimationTypes animationType, bool byPassCurrentAnimation = false)
+        public void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
             if (!IsAnimating || byPassCurrentAnimation) 
             {
                 IsAnimating = true;
 
-                clippedImage.BeginAnimation(Canvas.LeftProperty, WPFAnimations[animationType.ToString()].Item1);
-                clippedImage.BeginAnimation(Canvas.TopProperty, WPFAnimations[animationType.ToString()].Item2);
+                clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
+                clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
             }
         }
 
@@ -219,17 +222,17 @@ namespace Recoding.ClippyVSPackage
 
         void buildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            StartAnimation(ClippyAnimationTypes.Processing, true);
+            StartAnimation(ClippyAnimations.Processing, true);
         }
 
         void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
         {
-            StartAnimation(ClippyAnimationTypes.Save, true);
+            StartAnimation(ClippyAnimations.Save, true);
         }
 
         void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
         {
-            StartAnimation(ClippyAnimationTypes.LookUp);
+            StartAnimation(ClippyAnimations.LookUp);
         }
 
         /// <summary>

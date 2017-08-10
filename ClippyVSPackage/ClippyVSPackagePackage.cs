@@ -1,19 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.ComponentModel.Design;
-using Microsoft.Win32;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Shell;
 using System.Windows;
-using System.ComponentModel.Composition;
-using Recoding.ClippyVSPackage.Configurations;
-using Microsoft.VisualStudio.Settings;
-using Microsoft.VisualStudio.Shell.Settings;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -32,21 +25,17 @@ namespace Recoding.ClippyVSPackage
     [PackageRegistration(UseManagedResourcesOnly = true)]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "0.1", IconResourceID = 400)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(GuidList.guidClippyVSPackagePkgString)]
+    [Guid(GuidList.guidClippyVSPkgString)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution)]
-    public sealed class ClippyVSPackagePackage : Package
+    public sealed class ClippyVSPackage : Package
     {
         /// <summary>
-        /// Default constructor of the package.
-        /// Inside this method you can place any initialization code that does not require 
-        /// any Visual Studio service because at this point the package object is created but 
-        /// not sited yet inside Visual Studio environment. The place to do all the other 
-        /// initialization is the Initialize method.
+        /// Default ctor
         /// </summary>
-        public ClippyVSPackagePackage()
+        public ClippyVSPackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
@@ -71,7 +60,7 @@ namespace Recoding.ClippyVSPackage
             if ( null != mcs )
             {
                 // Create the command for the menu item.
-                CommandID menuCommandID = new CommandID(GuidList.guidClippyVSPackageCmdSet, (int)PkgCmdIDList.cmdShowClippy);
+                CommandID menuCommandID = new CommandID(GuidList.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
                 MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
                 mcs.AddCommand( menuItem );
             }

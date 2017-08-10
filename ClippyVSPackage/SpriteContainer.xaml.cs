@@ -71,7 +71,7 @@ namespace Recoding.ClippyVSPackage
 
             // TEMP: create a voice for each animation in the context menu
             var pMenu = (ContextMenu)this.Resources["cmButton"];
-            var values = Enum.GetValues(typeof(ClippyAnimationTypes));
+            var values = Enum.GetValues(typeof(ClippyAnimations));
 
             foreach (var val in values)
             {
@@ -90,7 +90,7 @@ namespace Recoding.ClippyVSPackage
 
             this.Dispatcher.Invoke(new Action(() =>
             {
-                _clippy.StartAnimation(ClippyAnimationTypes.Idle1_1);
+                _clippy.StartAnimation(ClippyAnimations.Idle1_1);
             }), DispatcherPriority.Send);
         }
 
@@ -113,7 +113,7 @@ namespace Recoding.ClippyVSPackage
 
             this.Dispatcher.Invoke(new Action(() =>
             {
-                _clippy.StartAnimation(ClippyAnimationTypes.GoodBye, true);
+                _clippy.StartAnimation(ClippyAnimations.GoodBye, true);
             }), DispatcherPriority.Send);
 
             BackgroundWorker bgWorker = new BackgroundWorker();
@@ -146,7 +146,7 @@ namespace Recoding.ClippyVSPackage
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
-            ClippyAnimationTypes animation = (ClippyAnimationTypes)Enum.Parse(typeof(ClippyAnimationTypes), (sender as MenuItem).Header.ToString());
+            ClippyAnimations animation = (ClippyAnimations)Enum.Parse(typeof(ClippyAnimations), (sender as MenuItem).Header.ToString());
 
             this.Dispatcher.Invoke(new Action(() =>
             {
@@ -181,7 +181,7 @@ namespace Recoding.ClippyVSPackage
             {
                 this.Dispatcher.Invoke(new Action(() =>
                 {
-                    _clippy.StartAnimation(ClippyAnimationTypes.Idle1_1, true);
+                    _clippy.StartAnimation(ClippyAnimations.Idle1_1, true);
                 }), DispatcherPriority.Send);
             }
         }
