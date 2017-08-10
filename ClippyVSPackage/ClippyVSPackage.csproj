@@ -195,7 +195,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="ClippyVSPackagePackage.cs" />
+    <Compile Include="ClippyVSPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="SpriteContainer.xaml.cs">
