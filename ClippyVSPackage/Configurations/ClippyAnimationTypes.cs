@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Recoding.ClippyVSPackage.Configurations
+﻿namespace Recoding.ClippyVSPackage.Configurations
 {
     public enum ClippyAnimationTypes
     {

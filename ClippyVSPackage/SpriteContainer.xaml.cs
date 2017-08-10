@@ -69,10 +69,29 @@ namespace Recoding.ClippyVSPackage
             
             }
 
-            this.Show();
+            // TEMP: create a voice for each animation in the context menu
+            var pMenu = (ContextMenu)this.Resources["cmButton"];
+            var values = Enum.GetValues(typeof(ClippyAnimationTypes));
+
+            foreach (var val in values)
+            {
+                var menuItem = new MenuItem()
+                {
+                    Header = val.ToString(),
+                    Name = "cmd" + val.ToString()
+                };
+                menuItem.Click += cmdTestAnimation_Click;
+                pMenu.Items.Add(menuItem);
+            }
+
+            // this.Show();
 
             _clippy = new Clippy((Canvas)this.FindName("ClippyCanvas"));
-            _clippy.StartAnimation(ClippyAnimationTypes.Idle1_1);
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                _clippy.StartAnimation(ClippyAnimationTypes.Idle1_1);
+            }), DispatcherPriority.Send);
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -112,23 +131,26 @@ namespace Recoding.ClippyVSPackage
                 
             };
             bgWorker.RunWorkerAsync();
-
-            //await this.Dispatcher.BeginInvoke(new Action(() =>
-            //{
-            //    Thread.Sleep(2000);
-
-            //    this.Owner.Focus();
-
-            //    this.Close();
-            //}), DispatcherPriority.ContextIdle);
-
         }
 
         private void cmdIdle_Click(object sender, RoutedEventArgs e)
         {
             this.Dispatcher.Invoke(new Action(() =>
             {
-                _clippy.StartAnimation(ClippyAnimationTypes.IdleAtom);
+                Random rmd = new Random();
+                int random_int = rmd.Next(0, Clippy.IdleAnimations.Count);
+
+                _clippy.StartAnimation(Clippy.IdleAnimations[random_int]);
+            }));
+        }
+
+        private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
+        {
+            ClippyAnimationTypes animation = (ClippyAnimationTypes)Enum.Parse(typeof(ClippyAnimationTypes), (sender as MenuItem).Header.ToString());
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                _clippy.StartAnimation(animation, true);
             }));
         }
 
@@ -143,10 +165,24 @@ namespace Recoding.ClippyVSPackage
 
                 _userSettingsStore.SetString(CollectionPath, "Top", this.Top.ToString());
                 _userSettingsStore.SetString(CollectionPath, "Left", this.Left.ToString());
+
+                e.Cancel = true;
+                this.Hide();
             }
             catch (Exception ex)
             {
                 Debug.Fail(ex.Message);
+            }
+        }
+
+        private void ClippySpriteContainer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (this.IsVisible)
+            {
+                this.Dispatcher.Invoke(new Action(() =>
+                {
+                    _clippy.StartAnimation(ClippyAnimationTypes.Idle1_1, true);
+                }), DispatcherPriority.Send);
             }
         }
     }

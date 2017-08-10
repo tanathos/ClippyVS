@@ -80,6 +80,7 @@ namespace Recoding.ClippyVSPackage
         void MainWindow_ContentRendered(object sender, EventArgs e)
         {
             SpriteContainer container = new SpriteContainer(this);
+            container.Show();
         }
 
         #endregion
@@ -91,27 +92,13 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void MenuItemCallback(object sender, EventArgs e)
         {
-            //// Show a Message Box to prove we were here
-            //IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
-            //Guid clsid = Guid.Empty;
-            //int result;
-            //Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(uiShell.ShowMessageBox(
-            //           0,
-            //           ref clsid,
-            //           "ClippyVS",
-            //           string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.ToString()),
-            //           string.Empty,
-            //           0,
-            //           OLEMSGBUTTON.OLEMSGBUTTON_OK,
-            //           OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST,
-            //           OLEMSGICON.OLEMSGICON_INFO,
-            //           0,        // false
-            //           out result));
-
-            // Makes sure only one instance of Clippy is created at time. I know, you want more.
-            if (!Application.Current.Windows.OfType<SpriteContainer>().Any()) 
+            if (!Application.Current.Windows.OfType<SpriteContainer>().Any())
             {
                 SpriteContainer container = new SpriteContainer(this);
+            }
+            else
+            {
+                Application.Current.Windows.OfType<SpriteContainer>().First().Show();
             }
         }
     }

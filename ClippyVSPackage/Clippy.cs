@@ -69,7 +69,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        private static List<ClippyAnimationTypes> IdleAnimations = new List<ClippyAnimationTypes>() { 
+        public static List<ClippyAnimationTypes> IdleAnimations = new List<ClippyAnimationTypes>() { 
             ClippyAnimationTypes.Idle1_1, 
             ClippyAnimationTypes.IdleRopePile, 
             ClippyAnimationTypes.IdleAtom, 
