@@ -1,27 +1,13 @@
-﻿using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Settings;
+﻿using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.Settings;
 using Recoding.ClippyVSPackage.Configurations;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace Recoding.ClippyVSPackage
@@ -39,50 +25,6 @@ namespace Recoding.ClippyVSPackage
 
         private const string CollectionPath = "ClippyVS";
 
-        private void Owner_LocationChanged(object sender, EventArgs e)
-        {
-            // TODO: implement child relative positioning on parent location changed
-
-            //foreach (SpriteContainer win in this.Owner.OwnedWindows)
-            //{
-            //    win.Top = this.Owner.Top + 100;
-            //    win.Left = this.Owner.Left + 100;
-            //}
-        }
-
-        private void SpriteContainer_LocationChanged(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine(String.Format("Parent {0} {1}", this.Owner.Top, this.Owner.Left));
-            System.Diagnostics.Debug.WriteLine(String.Format("Child {0} {1}", this.Top, this.Left));
-
-            var ownerTop = this.Owner.Top;
-            var ownerLeft = this.Owner.Left;
-            
-            if (this.Owner.WindowState == WindowState.Maximized)
-            {
-                ownerTop = 0;
-                ownerLeft = 0;
-            }
-
-            var ownerRight = this.Owner.ActualWidth + ownerLeft;
-            var ownerBottom = this.Owner.ActualHeight + ownerTop;
-
-            if (ownerTop > this.Top)
-                this.Top = ownerTop;
-
-            if (ownerLeft > this.Left)
-                this.Left = ownerLeft;
-
-            if (this.Left + this.ActualWidth > ownerRight)
-                this.Left = ownerRight - this.ActualWidth;
-
-            if (this.Top + this.ActualHeight > ownerBottom)
-                this.Top = ownerBottom - this.ActualHeight;
-
-            // TODO: calculate relative positioning for child
-            // TODO: store values 
-        }
-
         public SpriteContainer(Package package)
         {
             _package = package;
@@ -91,8 +33,13 @@ namespace Recoding.ClippyVSPackage
 
             this.Owner = System.Windows.Application.Current.MainWindow;
 
+            #region Register event handlers
+
             this.Owner.LocationChanged += new EventHandler(Owner_LocationChanged);
             this.LocationChanged += new EventHandler(SpriteContainer_LocationChanged);
+
+            #endregion
+
 
             SettingsManager settingsManager = new ShellSettingsManager(_package);
             _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
@@ -130,16 +77,18 @@ namespace Recoding.ClippyVSPackage
                 menuItem.Click += cmdTestAnimation_Click;
                 pMenu.Items.Add(menuItem);
             }
-
-            // this.Show();
+            // /TEMP
 
             _clippy = new Clippy((Canvas)this.FindName("ClippyCanvas"));
 
+            // Start default Idle animation
             this.Dispatcher.Invoke(new Action(() =>
             {
                 _clippy.StartAnimation(ClippyAnimations.Idle1_1);
             }), DispatcherPriority.Send);
         }
+
+        #region -- Event Handlers --
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -232,5 +181,51 @@ namespace Recoding.ClippyVSPackage
                 }), DispatcherPriority.Send);
             }
         }
+
+        private void Owner_LocationChanged(object sender, EventArgs e)
+        {
+            // TODO: implement child relative positioning on parent location changed
+
+            //foreach (SpriteContainer win in this.Owner.OwnedWindows)
+            //{
+            //    win.Top = this.Owner.Top + 100;
+            //    win.Left = this.Owner.Left + 100;
+            //}
+        }
+
+        private void SpriteContainer_LocationChanged(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine(String.Format("Parent {0} {1}", this.Owner.Top, this.Owner.Left));
+            System.Diagnostics.Debug.WriteLine(String.Format("Child {0} {1}", this.Top, this.Left));
+
+            var ownerTop = this.Owner.Top;
+            var ownerLeft = this.Owner.Left;
+
+            if (this.Owner.WindowState == WindowState.Maximized)
+            {
+                ownerTop = 0;
+                ownerLeft = 0;
+            }
+
+            var ownerRight = this.Owner.ActualWidth + ownerLeft;
+            var ownerBottom = this.Owner.ActualHeight + ownerTop;
+
+            if (ownerTop > this.Top)
+                this.Top = ownerTop;
+
+            if (ownerLeft > this.Left)
+                this.Left = ownerLeft;
+
+            if (this.Left + this.ActualWidth > ownerRight)
+                this.Left = ownerRight - this.ActualWidth;
+
+            if (this.Top + this.ActualHeight > ownerBottom)
+                this.Top = ownerBottom - this.ActualHeight;
+
+            // TODO: calculate relative positioning for child
+            // TODO: store values 
+        }
+
+        #endregion
     }
 }
