@@ -55,8 +55,14 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         public static int ClipHeight = 93;
 
+        /// <summary>
+        /// Seconds between a random idle animation and another
+        /// </summary>
         private static int IdleAnimationTimeout = 45;
 
+        /// <summary>
+        /// When is true it means an animation is actually running
+        /// </summary>
         public bool IsAnimating { get; set; }
 
         /// <summary>
@@ -78,18 +84,14 @@ namespace Recoding.ClippyVSPackage
             ClippyAnimations.IdleSnooze };
 
         /// <summary>
+        /// The list of all the available animations
+        /// </summary>
+        public List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
+
+        /// <summary>
         /// The time dispatcher to perform the animations in a random way
         /// </summary>
         private DispatcherTimer WPFAnimationsDispatcher;
-
-
-        private EnvDTE80.DTE2 dte;
-
-        EnvDTE.Events events;
-
-        EnvDTE.DocumentEventsClass docEvents;
-
-        EnvDTE.BuildEventsClass buildEvents;
 
         /// <summary>
         /// Default ctor
@@ -108,12 +110,14 @@ namespace Recoding.ClippyVSPackage
             if (Animations == null)
                 RegisterAnimations();
 
-            dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(SDTE));
-            events = dte.Events;
-            docEvents = (EnvDTE.DocumentEventsClass)dte.Events.DocumentEvents;
-            buildEvents = (EnvDTE.BuildEventsClass)dte.Events.BuildEvents;
+            this.AllAnimations = new List<ClippyAnimations>();
 
-            RegisterToDTEEvents();
+            var values = Enum.GetValues(typeof(ClippyAnimations));
+
+            foreach (ClippyAnimations val in values)
+            {
+                this.AllAnimations.Add(val);
+            }
 
             RegisterIdleRandomAnimations();
         }
@@ -204,36 +208,19 @@ namespace Recoding.ClippyVSPackage
         /// <param name="animationType"></param>
         public void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
-            if (!IsAnimating || byPassCurrentAnimation) 
+            System.Windows.Application.Current.MainWindow.Dispatcher.Invoke(new Action(() =>
             {
-                IsAnimating = true;
+                if (!IsAnimating || byPassCurrentAnimation) 
+                {
+                    IsAnimating = true;
 
-                clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
-                clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
-            }
+                    clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
+                    clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
+                }
+            }), DispatcherPriority.Send);
         }
 
-        private void RegisterToDTEEvents()
-        {
-            docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
-            docEvents.DocumentSaved += DocumentEvents_DocumentSaved;
-            buildEvents.OnBuildBegin += buildEvents_OnBuildBegin;
-        }
-
-        void buildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
-        {
-            StartAnimation(ClippyAnimations.Processing, true);
-        }
-
-        void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
-        {
-            StartAnimation(ClippyAnimations.Save, true);
-        }
-
-        void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
-        {
-            StartAnimation(ClippyAnimations.LookUp);
-        }
+        
 
         /// <summary>
         /// Reads the content of a stream into a string
