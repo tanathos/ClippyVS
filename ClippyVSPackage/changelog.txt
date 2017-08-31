@@ -1,5 +1,6 @@
 ﻿ClippyVS - Changelog
 --------------------
 
-0.2 - Introduced a basic option page
-0.1 - Beta version
+0.2.1	- Removed the MPF dependency
+0.2		- Introduced a basic option page
+0.1		- Beta version
