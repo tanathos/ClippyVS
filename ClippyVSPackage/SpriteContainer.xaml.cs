@@ -32,12 +32,7 @@ namespace Recoding.ClippyVSPackage
         /// The settings store of this package, to save preferences about the extension
         /// </summary>
         private WritableSettingsStore _userSettingsStore;
-
-        /// <summary>
-        /// The name of the collection of settings in the WritableSettingsStore
-        /// </summary>
-        private const string CollectionPath = "ClippyVS";
-
+        
         private EnvDTE80.DTE2 dte;
         private EnvDTE.Events events;
         private EnvDTE.DocumentEventsClass docEvents;
@@ -88,11 +83,11 @@ namespace Recoding.ClippyVSPackage
 
             try
             {
-                if (_userSettingsStore.PropertyExists(CollectionPath, "RelativeTop"))
-                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(CollectionPath, "RelativeTop"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeTop"))
+                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeTop"));
 
-                if (_userSettingsStore.PropertyExists(CollectionPath, "RelativeLeft"))
-                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(CollectionPath, "RelativeLeft"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeLeft"))
+                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeLeft"));
             }
             catch
             {
@@ -245,11 +240,11 @@ namespace Recoding.ClippyVSPackage
 
                     recalculateSpritePosition(out relativeTop, out relativeLeft);
 
-                    if (_userSettingsStore.PropertyExists(CollectionPath, "RelativeTop"))
-                        relativeTop = Double.Parse(_userSettingsStore.GetString(CollectionPath, "RelativeTop"));
+                    if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeTop"))
+                        relativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeTop"));
 
-                    if (_userSettingsStore.PropertyExists(CollectionPath, "RelativeLeft"))
-                        relativeLeft = Double.Parse(_userSettingsStore.GetString(CollectionPath, "RelativeLeft"));
+                    if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeLeft"))
+                        relativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeLeft"));
 
                     double ownerTop = this.Owner.Top;
                     double ownerLeft = this.Owner.Left;
@@ -412,13 +407,13 @@ namespace Recoding.ClippyVSPackage
         {
             try
             {
-                if (!_userSettingsStore.CollectionExists(CollectionPath))
+                if (!_userSettingsStore.CollectionExists(Constants.SettingsCollectionPath))
                 {
-                    _userSettingsStore.CreateCollection(CollectionPath);
+                    _userSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
                 }
 
-                _userSettingsStore.SetString(CollectionPath, "RelativeTop", relativeTop.ToString());
-                _userSettingsStore.SetString(CollectionPath, "RelativeLeft", relativeLeft.ToString());
+                _userSettingsStore.SetString(Constants.SettingsCollectionPath, "RelativeTop", relativeTop.ToString());
+                _userSettingsStore.SetString(Constants.SettingsCollectionPath, "RelativeLeft", relativeLeft.ToString());
             }
             catch
             {

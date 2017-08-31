@@ -167,6 +167,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Composition.Runtime, Version=1.0.32.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Composition.Runtime.1.1.0\lib\portable-net45+win8+wp8+wpa81\System.Composition.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
@@ -182,13 +185,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clippy.cs" />
+    <Compile Include="ClippyVSSettings.cs" />
     <Compile Include="Configurations\Animation.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Configurations\ClippyAnimations.cs" />
     <Compile Include="Configurations\ColumnRow.cs" />
     <Compile Include="Configurations\Frame.cs" />
-    <Compile Include="Guids.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="IClippyVSSettings.cs" />
+    <Compile Include="OptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
