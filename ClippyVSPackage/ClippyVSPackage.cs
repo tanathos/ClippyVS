@@ -12,7 +12,7 @@ using System.Windows;
 namespace Recoding.ClippyVSPackage
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "0.2.2", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "0.3", IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(Constants.guidClippyVSPkgString)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution)]

@@ -33,6 +33,10 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private WritableSettingsStore _userSettingsStore;
         
+        private double RelativeLeft { get; set; }
+
+        private double RelativeTop { get; set; }
+
         private EnvDTE80.DTE2 dte;
         private EnvDTE.Events events;
         private EnvDTE.DocumentEventsClass docEvents;
@@ -100,11 +104,17 @@ namespace Recoding.ClippyVSPackage
                 storedRelativeTop = relativeTop;
                 storedRelativeLeft = relativeLeft;
 
+                this.RelativeLeft = relativeLeft;
+                this.RelativeTop = relativeTop;
+
                 storeRelativeSpritePosition(storedRelativeTop.Value, storedRelativeLeft.Value);
             }
             else
             {
                 recalculateSpritePosition(out relativeTop, out relativeLeft);
+
+                this.RelativeLeft = relativeLeft;
+                this.RelativeTop = relativeTop;
             }
 
             double ownerTop = this.Owner.Top;
@@ -231,38 +241,24 @@ namespace Recoding.ClippyVSPackage
 
         private void Owner_LocationChanged(object sender, EventArgs e)
         {
-            foreach (SpriteContainer win in this.Owner.OwnedWindows)
+            // Detach the LocationChanged event of the Sprite Window to avoid recursing relative positions calculation... 
+            // TODO: find a better approach
+            this.LocationChanged -= SpriteContainer_LocationChanged;
+
+            double ownerTop = this.Owner.Top;
+            double ownerLeft = this.Owner.Left;
+
+            if (this.Owner.WindowState == WindowState.Maximized)
             {
-                try
-                {
-                    double relativeTop = 0;
-                    double relativeLeft = 0;
-
-                    recalculateSpritePosition(out relativeTop, out relativeLeft);
-
-                    if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeTop"))
-                        relativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeTop"));
-
-                    if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeLeft"))
-                        relativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeLeft"));
-
-                    double ownerTop = this.Owner.Top;
-                    double ownerLeft = this.Owner.Left;
-
-                    if (this.Owner.WindowState == WindowState.Maximized)
-                    {
-                        ownerTop = 0;
-                        ownerLeft = 0;
-                    }
-
-                    win.Top = ownerTop + relativeTop;
-                    win.Left = ownerLeft + relativeLeft;
-                }
-                catch
-                {
-
-                }
+                ownerTop = 0;
+                ownerLeft = 0;
             }
+
+            this.Top = ownerTop + this.RelativeTop;
+            this.Left = ownerLeft + this.RelativeLeft;
+
+            // Reattach the location changed event for the Clippy Sprite Window
+            this.LocationChanged += SpriteContainer_LocationChanged;
         }
 
         #endregion
@@ -343,15 +339,18 @@ namespace Recoding.ClippyVSPackage
 
         private void SpriteContainer_LocationChanged(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine(String.Format("Parent {0} {1}", this.Owner.Top, this.Owner.Left));
-            System.Diagnostics.Debug.WriteLine(String.Format("Child {0} {1}", this.Top, this.Left));
+            //System.Diagnostics.Debug.WriteLine(String.Format("Parent {0} {1}", this.Owner.Top, this.Owner.Left));
+            //System.Diagnostics.Debug.WriteLine(String.Format("Child {0} {1}", this.Top, this.Left));
 
             double relativeTop = this.Top;
             double relativeLeft = this.Left;
 
             recalculateSpritePosition(out relativeTop, out relativeLeft);
 
-            System.Diagnostics.Debug.WriteLine($"relativeTop {relativeTop} relativeLeft {relativeLeft}");
+            this.RelativeLeft = relativeLeft;
+            this.RelativeTop = relativeTop;
+
+            // System.Diagnostics.Debug.WriteLine($"relativeTop {relativeTop} relativeLeft {relativeLeft}");
 
             try
             {
@@ -367,13 +366,18 @@ namespace Recoding.ClippyVSPackage
 
         private void recalculateSpritePosition(out double relativeTop, out double relativeLeft, bool getDefaultPositioning = false)
         {
+            // Managing multi-screen scenarios
+            var ownerScreen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(this.Owner).Handle);
+            double leftBoundScreenCorrection = ownerScreen.Bounds.X;
+            double topBoundScreenCorrection = ownerScreen.Bounds.Y;
+
             double ownerTop = this.Owner.Top;
             double ownerLeft = this.Owner.Left;
 
             if (this.Owner.WindowState == WindowState.Maximized)
             {
-                ownerTop = 0;
-                ownerLeft = 0;
+                ownerTop = 0 + topBoundScreenCorrection;
+                ownerLeft = 0 + leftBoundScreenCorrection;
             }
 
             double ownerRight = this.Owner.ActualWidth + ownerLeft;
