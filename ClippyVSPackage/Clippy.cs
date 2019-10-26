@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Recoding.ClippyVSPackage.Configurations;
+﻿using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.Settings;
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.Settings;
@@ -16,7 +18,7 @@ namespace Recoding.ClippyVSPackage
     /// <summary>
     /// Interaction logic for SpriteContainer.xaml
     /// </summary>
-    public partial class SpriteContainer : Window
+    public partial class SpriteContainer : System.Windows.Window
     {
         /// <summary>
         /// The instance of Clippy, our hero
@@ -26,7 +28,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// This VSIX package
         /// </summary>
-        private Package _package;
+        private AsyncPackage _package;
 
         /// <summary>
         /// The settings store of this package, to save preferences about the extension
@@ -37,18 +39,18 @@ namespace Recoding.ClippyVSPackage
 
         private double RelativeTop { get; set; }
 
-        private EnvDTE80.DTE2 dte;
-        private EnvDTE.Events events;
-        private EnvDTE.DocumentEventsClass docEvents;
-        private EnvDTE.BuildEventsClass buildEvents;
-        private EnvDTE.ProjectItemsEvents projectItemsEvents;
-        private EnvDTE.ProjectItemsEvents csharpProjectItemsEvents;
+        private DTE Dte;
+        private Events events;
+        private DocumentEvents docEvents;
+        private BuildEvents buildEvents;
+        private ProjectItemsEvents projectItemsEvents;
+        private ProjectItemsEvents csharpProjectItemsEvents;
 
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="package"></param>
-        public SpriteContainer(Package package)
+        public SpriteContainer(AsyncPackage package)
         {
             _package = package;
 
@@ -61,11 +63,15 @@ namespace Recoding.ClippyVSPackage
             this.Topmost = false;
 
             #region Register event handlers
-
-            dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(SDTE));
+            IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
+                .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
+            //if (activityLog == null) return;
+            //System.Windows.Forms.MessageBox.Show("Found the activity log service.");
+            ThreadHelper.ThrowIfNotOnUIThread();
+            DTE dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
             events = dte.Events;
-            docEvents = (EnvDTE.DocumentEventsClass)dte.Events.DocumentEvents;
-            buildEvents = (EnvDTE.BuildEventsClass)dte.Events.BuildEvents;
+            docEvents = dte.Events.DocumentEvents;
+            buildEvents = dte.Events.BuildEvents;
 
             RegisterToDTEEvents();
 
@@ -162,7 +168,11 @@ namespace Recoding.ClippyVSPackage
             buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
             buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
 
-            EnvDTE80.Events2 events2 = dte.Events as EnvDTE80.Events2;
+            ThreadHelper.ThrowIfNotOnUIThread();
+            DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
+
+
+            Events2 events2 = dte.Events as Events2;
             if (events2 != null)
             {
                 this.projectItemsEvents = events2.ProjectItemsEvents;
