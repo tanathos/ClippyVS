@@ -64,7 +64,7 @@ namespace Recoding.ClippyVSPackage
         public bool IsAnimating { get; set; }
         public static int ClipHeight1 { get => ClipHeight; set => ClipHeight = value; }
         public static int ClipWidth1 { get => ClipWidth; set => ClipWidth = value; }
-        public List<ClippyAnimations> AllAnimations1 { get => AllAnimations; }
+        public List<ClippyAnimations> AllAnimations1 { get => AllAnimations; set => AllAnimations = value; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
