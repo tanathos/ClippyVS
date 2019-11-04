@@ -68,16 +68,6 @@
           <ButtonText>Clippy</ButtonText>
         </Strings>
       </Button>
-
-
-
-      <Button guid="guidClippyVSPackageCmdSet" id="cmdidCommand1" priority="0x0100" type="Button">
-        <Parent guid="guidClippyVSPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages1" id="bmpPic1" />
-        <Strings>
-          <ButtonText>Invoke Command1</ButtonText>
-        </Strings>
-      </Button>
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->

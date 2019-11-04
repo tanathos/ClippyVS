@@ -23,6 +23,6 @@
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.Net.Component.4.5.TargetingPack" Version="[15.0.26208.0,16.0)" DisplayName=".NET Framework 4.5 targeting pack" />
+        <Prerequisite Id="Microsoft.Net.Component.4.5.TargetingPack" Version="[14.0.26208.0,)" DisplayName=".NET Framework 4.5 targeting pack" />
     </Prerequisites>
 </PackageManifest>

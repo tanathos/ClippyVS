@@ -78,10 +78,9 @@ namespace Recoding.ClippyVSPackage
             {
                 SpriteContainer container = new SpriteContainer(this);
             }
-            else
-            {
+           
                 Application.Current.Windows.OfType<SpriteContainer>().First().Show();
-            }
+ 
         }
     }
 }
