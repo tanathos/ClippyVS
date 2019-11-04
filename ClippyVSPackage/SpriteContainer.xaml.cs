@@ -8,6 +8,7 @@ using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -34,7 +35,7 @@ namespace Recoding.ClippyVSPackage
         /// The settings store of this package, to save preferences about the extension
         /// </summary>
         private WritableSettingsStore _userSettingsStore;
-        
+
         private double RelativeLeft { get; set; }
 
         private double RelativeTop { get; set; }
@@ -52,6 +53,7 @@ namespace Recoding.ClippyVSPackage
         /// <param name="package"></param>
         public SpriteContainer(AsyncPackage package)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _package = package;
 
             SettingsManager settingsManager = new ShellSettingsManager(_package);
@@ -75,11 +77,11 @@ namespace Recoding.ClippyVSPackage
 
             RegisterToDTEEvents();
 
-            this.Owner.LocationChanged += Owner_LocationChanged;
-            this.Owner.StateChanged += Owner_StateOrSizeChanged;
-            this.Owner.SizeChanged += Owner_StateOrSizeChanged;
+            Owner.LocationChanged += Owner_LocationChanged;
+            Owner.StateChanged += Owner_StateOrSizeChanged;
+            Owner.SizeChanged += Owner_StateOrSizeChanged;
 
-            this.LocationChanged += SpriteContainer_LocationChanged;
+            LocationChanged += SpriteContainer_LocationChanged;
 
             #endregion
 
@@ -93,11 +95,11 @@ namespace Recoding.ClippyVSPackage
 
             try
             {
-                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeTop"))
-                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeTop"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeTop)))
+                    storedRelativeTop = double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)), CultureInfo.InvariantCulture);
 
-                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeLeft"))
-                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeLeft"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeLeft)))
+                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)), CultureInfo.InvariantCulture);
             }
             catch
             {
@@ -299,7 +301,7 @@ namespace Recoding.ClippyVSPackage
             {
                 while (_clippy.IsAnimating) { }
 
-                this.Dispatcher.Invoke(new Action(() =>
+                Dispatcher.Invoke(new Action(() =>
                 {
                     window.Owner.Focus();
 
@@ -309,14 +311,15 @@ namespace Recoding.ClippyVSPackage
 
             };
             bgWorker.RunWorkerAsync();
+            bgWorker.Dispose();
         }
 
-        private void cmdRandom_Click(object sender, RoutedEventArgs e)
+        private void CmdRandom_Click(object sender, RoutedEventArgs e)
         {
             Random rmd = new Random();
-            int random_int = rmd.Next(0, _clippy.AllAnimations.Count);
+            int random_int = rmd.Next(0, _clippy.AllAnimations1.Count);
 
-            _clippy.StartAnimation(_clippy.AllAnimations[random_int]);
+            _clippy.StartAnimation(_clippy.AllAnimations1[random_int]);
         }
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
@@ -412,8 +415,8 @@ namespace Recoding.ClippyVSPackage
             }
             else
             {
-                relativeTop = ownerBottom - (Clippy.ClipHeight + 100);
-                relativeLeft = ownerRight - (Clippy.ClipWidth + 100);
+                relativeTop = ownerBottom - (Clippy.ClipHeight1 + 100);
+                relativeLeft = ownerRight - (Clippy.ClipWidth1 + 100);
             }
         }
 
@@ -426,8 +429,8 @@ namespace Recoding.ClippyVSPackage
                     _userSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
                 }
 
-                _userSettingsStore.SetString(Constants.SettingsCollectionPath, "RelativeTop", relativeTop.ToString());
-                _userSettingsStore.SetString(Constants.SettingsCollectionPath, "RelativeLeft", relativeLeft.ToString());
+                _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeTop), relativeTop.ToString(CultureInfo.InvariantCulture));
+                _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeLeft), relativeLeft.ToString(CultureInfo.InvariantCulture));
             }
             catch
             {

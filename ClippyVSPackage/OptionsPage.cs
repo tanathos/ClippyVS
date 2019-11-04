@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ComponentModelHost;
+﻿using Microsoft.VisualStudio.ComponentModelHost;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
@@ -21,7 +20,7 @@ namespace Recoding.ClippyVSPackage
 
         public OptionsPage()
         {
-            
+
         }
 
         [Category("General")]

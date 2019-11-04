@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,8 +8,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
 namespace Recoding.ClippyVSPackage
@@ -35,19 +35,19 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            Debug.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+            Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
             System.Windows.Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
             OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if ( null != mcs )
+            if (null != mcs)
             {
                 // Create the command for the menu item.
                 CommandID menuCommandID = new CommandID(Constants.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
-                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
-                mcs.AddCommand( menuItem );
+                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
+                mcs.AddCommand(menuItem);
             }
             await Recoding.ClippyVSPackage.Command1.InitializeAsync(this);
         }
@@ -78,9 +78,9 @@ namespace Recoding.ClippyVSPackage
             {
                 SpriteContainer container = new SpriteContainer(this);
             }
-           
-                Application.Current.Windows.OfType<SpriteContainer>().First().Show();
- 
+
+            Application.Current.Windows.OfType<SpriteContainer>().First().Show();
+
         }
     }
 }

@@ -41,17 +41,17 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The image that holds the sprite
         /// </summary>
-        public Image clippedImage;
+        private Image clippedImage;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth = 124;
+        private static int ClipWidth = 124;
 
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight = 93;
+        private static int ClipHeight = 93;
 
         /// <summary>
         /// Seconds between a random idle animation and another
@@ -62,6 +62,9 @@ namespace Recoding.ClippyVSPackage
         /// When is true it means an animation is actually running
         /// </summary>
         public bool IsAnimating { get; set; }
+        public static int ClipHeight1 { get => ClipHeight; set => ClipHeight = value; }
+        public static int ClipWidth1 { get => ClipWidth; set => ClipWidth = value; }
+        public List<ClippyAnimations> AllAnimations1 { get => AllAnimations; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -71,20 +74,20 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() { 
-            ClippyAnimations.Idle1_1, 
-            ClippyAnimations.IdleRopePile, 
-            ClippyAnimations.IdleAtom, 
-            ClippyAnimations.IdleEyeBrowRaise, 
-            ClippyAnimations.IdleFingerTap, 
-            ClippyAnimations.IdleHeadScratch, 
-            ClippyAnimations.IdleSideToSide, 
+        private static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() {
+            ClippyAnimations.Idle1_1,
+            ClippyAnimations.IdleRopePile,
+            ClippyAnimations.IdleAtom,
+            ClippyAnimations.IdleEyeBrowRaise,
+            ClippyAnimations.IdleFingerTap,
+            ClippyAnimations.IdleHeadScratch,
+            ClippyAnimations.IdleSideToSide,
             ClippyAnimations.IdleSnooze };
 
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        public List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
+        private List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
 
         /// <summary>
         /// The time dispatcher to perform the animations in a random way
@@ -108,13 +111,13 @@ namespace Recoding.ClippyVSPackage
             if (Animations == null)
                 RegisterAnimations();
 
-            this.AllAnimations = new List<ClippyAnimations>();
+            this.AllAnimations1 = new List<ClippyAnimations>();
 
             var values = Enum.GetValues(typeof(ClippyAnimations));
 
             foreach (ClippyAnimations val in values)
             {
-                this.AllAnimations.Add(val);
+                this.AllAnimations1.Add(val);
             }
 
             RegisterIdleRandomAnimations();
@@ -153,10 +156,10 @@ namespace Recoding.ClippyVSPackage
                     }
 
                     // X
-                    DiscreteDoubleKeyFrame xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                    DiscreteDoubleKeyFrame xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth1 * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                     // Y
-                    DiscreteDoubleKeyFrame yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                    DiscreteDoubleKeyFrame yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight1 * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                     timeOffset += ((double)frame.Duration / 1000);
 
@@ -183,7 +186,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Registers a function to perform a subset of animations randomly (the idle ones)
         /// </summary>
-        private void RegisterIdleRandomAnimations() 
+        private void RegisterIdleRandomAnimations()
         {
             WPFAnimationsDispatcher = new DispatcherTimer();
             WPFAnimationsDispatcher.Interval = TimeSpan.FromSeconds(IdleAnimationTimeout);
@@ -206,9 +209,9 @@ namespace Recoding.ClippyVSPackage
         /// <param name="animationType"></param>
         public void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
-            System.Windows.Application.Current.MainWindow.Dispatcher.Invoke(new Action(() =>
+            Application.Current.MainWindow.Dispatcher.Invoke(new Action(() =>
             {
-                if (!IsAnimating || byPassCurrentAnimation) 
+                if (!IsAnimating || byPassCurrentAnimation)
                 {
                     IsAnimating = true;
 
@@ -218,7 +221,7 @@ namespace Recoding.ClippyVSPackage
             }), DispatcherPriority.Send);
         }
 
-        
+
 
         /// <summary>
         /// Reads the content of a stream into a string

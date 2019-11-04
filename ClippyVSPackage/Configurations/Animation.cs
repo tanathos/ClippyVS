@@ -23,6 +23,6 @@ namespace Recoding.ClippyVSPackage.Configurations
         /// <summary>
         /// Frames in the animation
         /// </summary>
-        public List<Frame> Frames { get; set; }
+        public List<Frame> Frames { get; }
     }
 }

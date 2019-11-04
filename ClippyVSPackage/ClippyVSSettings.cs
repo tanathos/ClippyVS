@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Shell.Settings;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -60,7 +61,7 @@ namespace Recoding.ClippyVSPackage
                     writableSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
                 }
 
-                writableSettingsStore.SetString(Constants.SettingsCollectionPath, "ShowAtStartup", this.ShowAtStartup.ToString());
+                writableSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(ShowAtStartup), ShowAtStartup.ToString(CultureInfo.InvariantCulture));
             }
             catch (Exception ex)
             {
@@ -79,10 +80,10 @@ namespace Recoding.ClippyVSPackage
             try
             {
                 // Tries to retrieve the configurations if previously saved
-                if (writableSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "ShowAtStartup"))
+                if (writableSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(ShowAtStartup)))
                 {
                     bool b = this.ShowAtStartup;
-                    if (Boolean.TryParse(writableSettingsStore.GetString(Constants.SettingsCollectionPath, "ShowAtStartup"), out b))
+                    if (Boolean.TryParse(writableSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(ShowAtStartup)), out b))
                         this.ShowAtStartup = b;
                 }
             }
