@@ -40,7 +40,6 @@ namespace Recoding.ClippyVSPackage
 
         private double RelativeTop { get; set; }
 
-        private DTE Dte;
         private Events events;
         private DocumentEvents docEvents;
         private BuildEvents buildEvents;
@@ -172,7 +171,10 @@ namespace Recoding.ClippyVSPackage
 
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
-
+            if (findEvents != null)
+            {
+                findEvents.FindDone += FindEventsClass_FindDone;
+            }
 
             Events2 events2 = dte.Events as Events2;
             if (events2 != null)
@@ -199,37 +201,37 @@ namespace Recoding.ClippyVSPackage
             _clippy.StartAnimation(ClippyAnimations.Writing, true);
         }
 
-        private void ProjectItemsEvents_ItemRemoved(EnvDTE.ProjectItem ProjectItem)
+        private void ProjectItemsEvents_ItemRemoved(ProjectItem ProjectItem)
         {
             _clippy.StartAnimation(ClippyAnimations.EmptyTrash, true);
         }
 
-        private void ProjectItemsEvents_ItemAdded(EnvDTE.ProjectItem ProjectItem)
+        private void ProjectItemsEvents_ItemAdded(ProjectItem ProjectItem)
         {
             _clippy.StartAnimation(ClippyAnimations.Congratulate, true);
         }
 
-        private void FindEventsClass_FindDone(EnvDTE.vsFindResult Result, bool Cancelled)
+        private void FindEventsClass_FindDone(vsFindResult Result, bool Cancelled)
         {
             _clippy.StartAnimation(ClippyAnimations.Searching, true);
         }
 
-        private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        private void BuildEvents_OnBuildDone(vsBuildScope Scope, vsBuildAction Action)
         {
             _clippy.StartAnimation(ClippyAnimations.Congratulate, true);
         }
 
-        private void DocEvents_DocumentClosing(EnvDTE.Document Document)
+        private void DocEvents_DocumentClosing(Document Document)
         {
             _clippy.StartAnimation(ClippyAnimations.GestureDown, true);
         }
 
-        private void BuildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
         {
             _clippy.StartAnimation(ClippyAnimations.Processing, true); // GetTechy
         }
 
-        private void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
+        private void DocumentEvents_DocumentSaved(Document Document)
         {
             _clippy.StartAnimation(ClippyAnimations.Save, true);
         }

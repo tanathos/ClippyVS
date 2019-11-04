@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
@@ -17,12 +18,12 @@ namespace Recoding.ClippyVSPackage
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(Constants.guidClippyVSPkgString)]
     [ProvideOptionPageAttribute(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
-    public sealed class ClippyVSPackage : AsyncPackage
+    public sealed class ClippyVisualStudioPackage : AsyncPackage
     {
         /// <summary>
         /// Default ctor
         /// </summary>
-        public ClippyVSPackage()
+        public ClippyVisualStudioPackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
@@ -38,7 +39,7 @@ namespace Recoding.ClippyVSPackage
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
-            System.Windows.Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
+            Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
             OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
@@ -49,7 +50,7 @@ namespace Recoding.ClippyVSPackage
                 MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
                 mcs.AddCommand(menuItem);
             }
-            await Recoding.ClippyVSPackage.Command1.InitializeAsync(this);
+            await Command1.InitializeAsync(this);
         }
 
         void MainWindow_ContentRendered(object sender, EventArgs e)

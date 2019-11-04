@@ -31,7 +31,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The sprite with all the animation stages for Clippy
         /// </summary>
-        public BitmapSource Sprite;
+        private BitmapSource Sprite;
 
         /// <summary>
         /// The actual Clippy container that works as a clipping mask
@@ -56,7 +56,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Seconds between a random idle animation and another
         /// </summary>
-        private static int IdleAnimationTimeout = 45;
+        private const int IdleAnimationTimeout = 45;
 
         /// <summary>
         /// When is true it means an animation is actually running
@@ -101,9 +101,13 @@ namespace Recoding.ClippyVSPackage
         {
             this.Sprite = new BitmapImage(new Uri(spriteResourceUri, UriKind.RelativeOrAbsolute));
 
-            clippedImage = new System.Windows.Controls.Image();
-            clippedImage.Source = Sprite;
-            clippedImage.Stretch = Stretch.None;
+            clippedImage = new Image
+            {
+                Source = Sprite,
+                Stretch = Stretch.None
+            };
+
+            if (canvas == null) return;
 
             canvas.Children.Clear();
             canvas.Children.Add(clippedImage);
@@ -111,14 +115,10 @@ namespace Recoding.ClippyVSPackage
             if (Animations == null)
                 RegisterAnimations();
 
-            this.AllAnimations1 = new List<ClippyAnimations>();
-
+            AllAnimations1 = new List<ClippyAnimations>();
             var values = Enum.GetValues(typeof(ClippyAnimations));
-
             foreach (ClippyAnimations val in values)
-            {
-                this.AllAnimations1.Add(val);
-            }
+                AllAnimations1.Add(val);
 
             RegisterIdleRandomAnimations();
         }
