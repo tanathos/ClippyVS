@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.ComponentModelHost;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -26,6 +27,7 @@ namespace Recoding.ClippyVSPackage
         public ClippyVisualStudioPackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
+
         }
 
         #region Package Members
@@ -36,13 +38,14 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
-            Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
-
+            await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            
             // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)).ConfigureAwait(true) as OleMenuCommandService;
             if (null != mcs)
             {
                 // Create the command for the menu item.
@@ -50,7 +53,20 @@ namespace Recoding.ClippyVSPackage
                 MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
                 mcs.AddCommand(menuItem);
             }
-            await Command1.InitializeAsync(this);
+            await Command1.InitializeAsync(this).ConfigureAwait(true);
+        }
+
+        private void SolutionEvents_Opened()
+        {
+            var componentModel = (IComponentModel)(GetService(typeof(SComponentModel)));
+            IClippyVSSettings s = componentModel.DefaultExportProvider.GetExportedValue<IClippyVSSettings>();
+
+            SpriteContainer container = new SpriteContainer(this);
+
+            if (s.ShowAtStartup)
+            {
+                container.Show();
+            }
         }
 
         void MainWindow_ContentRendered(object sender, EventArgs e)

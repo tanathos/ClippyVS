@@ -63,7 +63,7 @@ namespace Recoding.ClippyVSPackage
 
                 writableSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(ShowAtStartup), ShowAtStartup.ToString(CultureInfo.InvariantCulture));
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 Debug.Fail(ex.Message);
             }
@@ -87,7 +87,7 @@ namespace Recoding.ClippyVSPackage
                         this.ShowAtStartup = b;
                 }
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 Debug.Fail(ex.Message);
             }

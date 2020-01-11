@@ -1,4 +1,5 @@
-﻿using Recoding.ClippyVSPackage.Configurations;
+﻿using Microsoft.VisualStudio.Shell;
+using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,11 +132,11 @@ namespace Recoding.ClippyVSPackage
             Uri uri = new Uri(animationsResourceUri, UriKind.RelativeOrAbsolute);
             StreamResourceInfo info = Application.GetResourceStream(uri);
 
-            List<Animation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Animation>>(StreamToString(info.Stream));
+            List<ClippyAnimation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippyAnimation>>(StreamToString(info.Stream));
 
             Animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
 
-            foreach (Animation animation in storedAnimations)
+            foreach (ClippyAnimation animation in storedAnimations)
             {
                 DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames();
                 xDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
@@ -209,8 +210,10 @@ namespace Recoding.ClippyVSPackage
         /// <param name="animationType"></param>
         public void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
-            Application.Current.MainWindow.Dispatcher.Invoke(new Action(() =>
+            Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 if (!IsAnimating || byPassCurrentAnimation)
                 {
                     IsAnimating = true;
@@ -218,9 +221,8 @@ namespace Recoding.ClippyVSPackage
                     clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
                     clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
                 }
-            }), DispatcherPriority.Send);
+            });
         }
-
 
 
         /// <summary>

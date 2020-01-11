@@ -5,12 +5,12 @@ namespace Recoding.ClippyVSPackage.Configurations
     /// <summary>
     /// Represents a single animation, as it is directly mapped from the JSON
     /// </summary>
-    public class Animation
+    public class ClippyAnimation
     {
         /// <summary>
         /// Default ctor
         /// </summary>
-        public Animation()
+        public ClippyAnimation()
         {
             Frames = new List<Frame>();
         }

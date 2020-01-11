@@ -9,6 +9,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -60,10 +61,13 @@ namespace Recoding.ClippyVSPackage
 
             InitializeComponent();
 
-            this.Owner = System.Windows.Application.Current.MainWindow;
+            this.Owner = Application.Current.MainWindow;
             this.Topmost = false;
 
             #region Register event handlers
+            if (package == null) 
+                throw new ArgumentException("Package was null");
+
             IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
                 .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
             //if (activityLog == null) return;
@@ -74,7 +78,7 @@ namespace Recoding.ClippyVSPackage
             docEvents = dte.Events.DocumentEvents;
             buildEvents = dte.Events.BuildEvents;
 
-            RegisterToDTEEvents();
+            _ = RegisterToDTEEventsAsync();
 
             Owner.LocationChanged += Owner_LocationChanged;
             Owner.StateChanged += Owner_StateOrSizeChanged;
@@ -100,9 +104,9 @@ namespace Recoding.ClippyVSPackage
                 if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeLeft)))
                     storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)), CultureInfo.InvariantCulture);
             }
-            catch
+            catch (Exception e)
             {
-
+                Debug.Fail(e.Message);
             }
 
             if (!storedRelativeTop.HasValue || !storedRelativeLeft.HasValue)
@@ -160,7 +164,7 @@ namespace Recoding.ClippyVSPackage
             _clippy.StartAnimation(ClippyAnimations.Idle1_1);
         }
 
-        private void RegisterToDTEEvents()
+        private async Task<bool> RegisterToDTEEventsAsync()
         {
             docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
             docEvents.DocumentSaved += DocumentEvents_DocumentSaved;
@@ -168,12 +172,11 @@ namespace Recoding.ClippyVSPackage
 
             buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
             buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
-
-            ThreadHelper.ThrowIfNotOnUIThread();
-            DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
-            if (findEvents != null)
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            DTE dte = await _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(false) as DTE;
+            if (dte.Events.FindEvents != null)
             {
-                findEvents.FindDone += FindEventsClass_FindDone;
+                dte.Events.FindEvents.FindDone += FindEventsClass_FindDone;
             }
 
             Events2 events2 = dte.Events as Events2;
@@ -192,6 +195,8 @@ namespace Recoding.ClippyVSPackage
                 this.csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
                 this.csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
             }
+
+            return true;
         }
 
         #region -- IDE Event Handlers --
@@ -303,13 +308,13 @@ namespace Recoding.ClippyVSPackage
             {
                 while (_clippy.IsAnimating) { }
 
-                Dispatcher.Invoke(new Action(() =>
-                {
-                    window.Owner.Focus();
+                ThreadHelper.JoinableTaskFactory.Run(async delegate {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                    window.Owner.Focus();
                     window.Close();
 
-                }), DispatcherPriority.Send);
+                });
 
             };
             bgWorker.RunWorkerAsync();
@@ -371,9 +376,9 @@ namespace Recoding.ClippyVSPackage
             {
                 storeRelativeSpritePosition(relativeTop, relativeLeft);
             }
-            catch
+            catch (Exception ex)
             {
-
+                Debug.Fail(ex.Message);
             }
         }
 
@@ -434,9 +439,9 @@ namespace Recoding.ClippyVSPackage
                 _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeTop), relativeTop.ToString(CultureInfo.InvariantCulture));
                 _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeLeft), relativeLeft.ToString(CultureInfo.InvariantCulture));
             }
-            catch
+            catch (ArgumentException ae)
             {
-
+                Debug.Fail(ae.Message);
             }
         }
     }
