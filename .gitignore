@@ -250,3 +250,4 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+/MigrationBackup/53daca6d/ClippyVSPackage
