@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Settings;
+
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.Settings;
@@ -12,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Threading.Tasks;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -34,7 +36,7 @@ namespace Recoding.ClippyVSPackage
         /// The settings store of this package, to save preferences about the extension
         /// </summary>
         private WritableSettingsStore _userSettingsStore;
-        
+
         private double RelativeLeft { get; set; }
 
         private double RelativeTop { get; set; }
@@ -54,8 +56,23 @@ namespace Recoding.ClippyVSPackage
         {
             _package = package;
 
-            SettingsManager settingsManager = new ShellSettingsManager(_package);
-            _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+            var x = this.Owner;
+            // XXXX
+            
+            //var svc = ThreadHelper.JoinableTaskFactory.Run(async delegate
+            //{
+            //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+            //    var setingsManager= await AsyncServiceProvider.GlobalProvider.GetServiceAsync(typeof(SVsSettingsManager));
+            //    return setingsManager as ShellSettingsManager;
+            //});
+
+
+            var settingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+           _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+
+            //var shellSettingsManager = new ShellSettingsManager(package.set)
+            //writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+            //_userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
             InitializeComponent();
 
@@ -169,6 +186,7 @@ namespace Recoding.ClippyVSPackage
             buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
 
             ThreadHelper.ThrowIfNotOnUIThread();
+
             DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
 
 

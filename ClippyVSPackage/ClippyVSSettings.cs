@@ -1,16 +1,22 @@
-﻿using Microsoft.VisualStudio.Settings;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Settings;
-using System;
-using System.ComponentModel.Composition;
+﻿using System;
+using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
+using Microsoft;
+using Microsoft.VisualStudio.Settings;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.Settings;
+using Task = System.Threading.Tasks.Task;
 
 namespace Recoding.ClippyVSPackage
 {
     /// <summary>
     /// Instance class to represent the ClippyVS user's settings
     /// </summary>
-    [Export(typeof(IClippyVSSettings))]
+    /// [Export(typeof(IClippyVSSettings))]
+    /// 
     public class ClippyVSSettings : IClippyVSSettings
     {
         /// <summary>
@@ -32,8 +38,8 @@ namespace Recoding.ClippyVSPackage
         /// Constructor for service injection
         /// </summary>
         /// <param name="vsServiceProvider"></param>
-        [ImportingConstructor]
-        public ClippyVSSettings(SVsServiceProvider vsServiceProvider) : this()
+        ///[ImportingConstructor]
+        public ClippyVSSettings(System.IServiceProvider vsServiceProvider) : this()
         {
             var shellSettingsManager = new ShellSettingsManager(vsServiceProvider);
             writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
