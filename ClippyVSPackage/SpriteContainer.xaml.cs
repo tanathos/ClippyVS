@@ -58,7 +58,7 @@ namespace Recoding.ClippyVSPackage
 
             var x = this.Owner;
             // XXXX
-            
+
             //var svc = ThreadHelper.JoinableTaskFactory.Run(async delegate
             //{
             //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
@@ -66,7 +66,7 @@ namespace Recoding.ClippyVSPackage
             //    return setingsManager as ShellSettingsManager;
             //});
 
-
+            ThreadHelper.ThrowIfNotOnUIThread();
             var settingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
            _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 

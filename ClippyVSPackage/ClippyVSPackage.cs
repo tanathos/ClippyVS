@@ -42,34 +42,43 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            Debug.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
-            base.Initialize();
-
-            System.Windows.Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
-
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if ( null != mcs )
+            try
             {
-                // Create the command for the menu item.
-                CommandID menuCommandID = new CommandID(Constants.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
-                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
-                mcs.AddCommand( menuItem );
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+                base.Initialize();
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
+                Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
+                
+                // Add our command handlers for menu (commands must exist in the .vsct file)
+                OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+                if (null != mcs)
+                {
+                    // Create the command for the menu item.
+                    CommandID menuCommandID = new CommandID(Constants.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
+                    MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
+                    mcs.AddCommand(menuItem);
+                }
+                await Command1.InitializeAsync(this);
             }
-            await Recoding.ClippyVSPackage.Command1.InitializeAsync(this);
+            catch (Exception e)
+            {
+                MessageBox.Show("Exception !");
+            }
         }
 
-        void MainWindow_ContentRendered(object sender, EventArgs e)
+        async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
-            var componentModel = (IComponentModel)(GetService(typeof(SComponentModel)));
-            IClippyVSSettings s = componentModel.DefaultExportProvider.GetExportedValue<IClippyVSSettings>();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
+            IClippyVSSettings settings = new ClippyVSSettings(ServiceProvider.GlobalProvider);
 
             SpriteContainer container = new SpriteContainer(this);
 
-            if (s.ShowAtStartup)
+            if (settings.ShowAtStartup)
             {
                 container.Show();
             }
+
         }
 
         #endregion
@@ -85,9 +94,9 @@ namespace Recoding.ClippyVSPackage
             {
                 SpriteContainer container = new SpriteContainer(this);
             }
-           
-                Application.Current.Windows.OfType<SpriteContainer>().First().Show();
- 
+
+            Application.Current.Windows.OfType<SpriteContainer>().First().Show();
+
         }
     }
 }
