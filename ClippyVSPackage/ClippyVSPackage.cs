@@ -18,6 +18,10 @@ namespace Recoding.ClippyVSPackage
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideService(typeof(OleMenuCommandService))]
     [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasMultipleProjects_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasSingleProject_string, PackageAutoLoadFlags.BackgroundLoad)]
+
     [Guid(Constants.guidClippyVSPkgString)]
     [ProvideOptionPageAttribute(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
     public sealed class ClippyVSPackage : AsyncPackage
