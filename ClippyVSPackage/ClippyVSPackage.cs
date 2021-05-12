@@ -47,11 +47,13 @@ namespace Recoding.ClippyVSPackage
                 Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
                 base.Initialize();
 
+                OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
                 Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
                 
                 // Add our command handlers for menu (commands must exist in the .vsct file)
-                OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+                
                 if (null != mcs)
                 {
                     // Create the command for the menu item.
@@ -69,15 +71,13 @@ namespace Recoding.ClippyVSPackage
 
         async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
+            var token = new CancellationToken();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
             IClippyVSSettings settings = new ClippyVSSettings(ServiceProvider.GlobalProvider);
-
             SpriteContainer container = new SpriteContainer(this);
 
             if (settings.ShowAtStartup)
-            {
                 container.Show();
-            }
 
         }
 

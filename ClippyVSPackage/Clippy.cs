@@ -1,8 +1,11 @@
-﻿using Recoding.ClippyVSPackage.Configurations;
+﻿
+using Microsoft.VisualStudio.Shell;
+using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -204,18 +207,16 @@ namespace Recoding.ClippyVSPackage
         /// Start a specific animation
         /// </summary>
         /// <param name="animationType"></param>
-        public void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
+        public async void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
-            System.Windows.Application.Current.MainWindow.Dispatcher.Invoke(new Action(() =>
-            {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 if (!IsAnimating || byPassCurrentAnimation) 
                 {
                     IsAnimating = true;
 
-                    clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
+                    clippedImage.BeginAnimation (Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
                     clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
                 }
-            }), DispatcherPriority.Send);
         }
 
         
