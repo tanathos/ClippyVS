@@ -1,28 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-  <Metadata>
-    <Identity Id="6aae52ac-8840-421f-bb35-60b52ab431e2" Version="0.4" Language="en-US" Publisher="Denis Abt " />
-    <DisplayName>ClippyVS 2019</DisplayName>
-    <Description xml:space="preserve">Clippy is back! Now in VS 2019. Thanks Eros Fratini for getting Clippy alive and back, and for letting me port it to Visual Studio 2019.</Description>
-    <License>LICENSE.txt</License>
-    <ReleaseNotes>changelog.txt</ReleaseNotes>
-    <Icon>Resources\Package.ico</Icon>
-    <PreviewImage>Resources\preview.png</PreviewImage>
-    <Tags>adornment, vintage, nostalgia</Tags>
-  </Metadata>
-  <Installation InstalledByMsi="false">
-    <InstallationTarget Version="[14.0,17.0)" Id="Microsoft.VisualStudio.Community" />
-    <InstallationTarget Version="[14.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
-    <InstallationTarget Version="[14.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
-  </Installation>
-  <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-  </Dependencies>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-  </Assets>
-  <Prerequisites>
-    <Prerequisite Id="Microsoft.Net.Component.4.5.TargetingPack" Version="[14.0.26208.0,)" DisplayName=".NET Framework 4.5 targeting pack" />
-  </Prerequisites>
+    <Metadata>
+        <Identity Id="6aae52ac-8840-421f-bb35-60b52ab431e2" Version="0.4" Language="en-US" Publisher="Eros Fratini" />
+        <DisplayName>ClippyVS</DisplayName>
+        <Description xml:space="preserve">Clippy is back!
+Thanks To Eros Fratini - I've migrated this to VS 2019</Description>
+        <License>LICENSE.txt</License>
+        <ReleaseNotes>changelog.txt</ReleaseNotes>
+        <Icon>Resources\Package.ico</Icon>
+        <PreviewImage>Resources\preview.png</PreviewImage>
+        <Tags>adornment, vintage, nostalgia</Tags>
+    </Metadata>
+    <Installation InstalledByMsi="false">
+        <InstallationTarget Version="[17.0,)" Id="Microsoft.VisualStudio.Community" />
+        <InstallationTarget Version="[17.0,)" Id="Microsoft.VisualStudio.Enterprise" />
+        <InstallationTarget Version="[17.0,)" Id="Microsoft.VisualStudio.Pro" />
+    </Installation>
+    <Dependencies>
+        <!--<Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />-->
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
 </PackageManifest>

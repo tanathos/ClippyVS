@@ -1,7 +1,7 @@
-﻿using EnvDTE;
-using Microsoft.VisualStudio.ComponentModelHost;
+﻿using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.Settings;
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
@@ -15,8 +15,14 @@ using Task = System.Threading.Tasks.Task;
 namespace Recoding.ClippyVSPackage
 {
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112", "0.3", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "0.4", IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+    [ProvideService(typeof(OleMenuCommandService))]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasMultipleProjects_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasSingleProject_string, PackageAutoLoadFlags.BackgroundLoad)]
+
     [Guid(Constants.guidClippyVSPkgString)]
     [ProvideOptionPageAttribute(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
     public sealed class ClippyVisualStudioPackage : AsyncPackage
@@ -38,48 +44,47 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            
-            Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
-            base.Initialize();
-
-            await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-            
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)).ConfigureAwait(true) as OleMenuCommandService;
-            if (null != mcs)
+            try
             {
-                // Create the command for the menu item.
-                CommandID menuCommandID = new CommandID(Constants.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
-                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
-                mcs.AddCommand(menuItem);
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+                base.Initialize();
+
+                OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
+                Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
+
+                // Add our command handlers for menu (commands must exist in the .vsct file)
+
+                if (null != mcs)
+                {
+                    // Create the command for the menu item.
+                    CommandID menuCommandID = new CommandID(Constants.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
+                    MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
+                    mcs.AddCommand(menuItem);
+                }
+                await Command1.InitializeAsync(this);
             }
-            await Command1.InitializeAsync(this).ConfigureAwait(true);
+            catch (Exception e)
+            {
+                MessageBox.Show("Exception !");
+            }
+            await Recoding.ClippyVSPackage.Command1.InitializeAsync(this);
         }
 
-        private void SolutionEvents_Opened()
+        async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
-            var componentModel = (IComponentModel)(GetService(typeof(SComponentModel)));
-            IClippyVSSettings s = componentModel.DefaultExportProvider.GetExportedValue<IClippyVSSettings>();
+            var token = new CancellationToken();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+            var shellSettingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+            var writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
+            IClippyVSSettings settings = new ClippyVSSettings(writableSettingsStore);
             SpriteContainer container = new SpriteContainer(this);
 
-            if (s.ShowAtStartup)
-            {
+            if (settings.ShowAtStartup)
                 container.Show();
-            }
-        }
 
-        void MainWindow_ContentRendered(object sender, EventArgs e)
-        {
-            var componentModel = (IComponentModel)(GetService(typeof(SComponentModel)));
-            IClippyVSSettings s = componentModel.DefaultExportProvider.GetExportedValue<IClippyVSSettings>();
-
-            SpriteContainer container = new SpriteContainer(this);
-
-            if (s.ShowAtStartup)
-            {
-                container.Show();
-            }
         }
 
         #endregion

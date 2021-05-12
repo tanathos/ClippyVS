@@ -1,26 +1,46 @@
-﻿using Microsoft.VisualStudio.ComponentModelHost;
+﻿using Microsoft.VisualStudio.Settings;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Settings;
+using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace Recoding.ClippyVSPackage
 {
     [Guid(Constants.guidOptionsPage)]
-    public class OptionsPage : Microsoft.VisualStudio.Shell.DialogPage
+    public class OptionsPage : DialogPage
     {
+        private WritableSettingsStore _store;
         IClippyVSSettings settings
         {
             get
             {
-                var componentModel = (IComponentModel)(Site.GetService(typeof(SComponentModel)));
-                IClippyVSSettings s = componentModel.DefaultExportProvider.GetExportedValue<IClippyVSSettings>();
-
+                var s = GetClippySettings();
                 return s;
             }
         }
 
+        private IClippyVSSettings GetClippySettings()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            bool res = false;
+            if (_store.PropertyExists(Constants.SettingsCollectionPath, "ShowAtStartup"))
+            {
+                res = _store.GetBoolean(Constants.SettingsCollectionPath, "ShowAtStartup");
+                return new ClippyVSSettings(_store)
+                {
+                    ShowAtStartup = res
+                };
+            }
+            return null;
+
+        }
+
         public OptionsPage()
         {
-
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var settingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+            _store = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
         }
 
         [Category("General")]
@@ -49,19 +69,18 @@ namespace Recoding.ClippyVSPackage
         /// This method is called when VS wants to save the user's 
         /// changes (for example, when the user clicks OK in the dialog).
         /// </devdoc>
-        protected override void OnApply(PageApplyEventArgs e)
+        protected override async void OnApply(PageApplyEventArgs e)
         {
-            IClippyVSSettings storedValues = settings;
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var shellSettingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+            var writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
-            IClippyVSSettings currentValues = new ClippyVSSettings()
+            IClippyVSSettings appliedValues = new ClippyVSSettings(writableSettingsStore)
             {
                 ShowAtStartup = ShowAtStartup
             };
 
-            settings.ShowAtStartup = currentValues.ShowAtStartup;
-
-            settings.Store();
-
+            appliedValues.Store();
             base.OnApply(e);
         }
 
