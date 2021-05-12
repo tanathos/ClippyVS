@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -74,14 +73,14 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() { 
-            ClippyAnimations.Idle1_1, 
-            ClippyAnimations.IdleRopePile, 
-            ClippyAnimations.IdleAtom, 
-            ClippyAnimations.IdleEyeBrowRaise, 
-            ClippyAnimations.IdleFingerTap, 
-            ClippyAnimations.IdleHeadScratch, 
-            ClippyAnimations.IdleSideToSide, 
+        public static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() {
+            ClippyAnimations.Idle1_1,
+            ClippyAnimations.IdleRopePile,
+            ClippyAnimations.IdleAtom,
+            ClippyAnimations.IdleEyeBrowRaise,
+            ClippyAnimations.IdleFingerTap,
+            ClippyAnimations.IdleHeadScratch,
+            ClippyAnimations.IdleSideToSide,
             ClippyAnimations.IdleSnooze };
 
         /// <summary>
@@ -186,7 +185,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Registers a function to perform a subset of animations randomly (the idle ones)
         /// </summary>
-        private void RegisterIdleRandomAnimations() 
+        private void RegisterIdleRandomAnimations()
         {
             WPFAnimationsDispatcher = new DispatcherTimer();
             WPFAnimationsDispatcher.Interval = TimeSpan.FromSeconds(IdleAnimationTimeout);
@@ -210,16 +209,16 @@ namespace Recoding.ClippyVSPackage
         public async void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                if (!IsAnimating || byPassCurrentAnimation) 
-                {
-                    IsAnimating = true;
+            if (!IsAnimating || byPassCurrentAnimation)
+            {
+                IsAnimating = true;
 
-                    clippedImage.BeginAnimation (Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
-                    clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
-                }
+                clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
+                clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
+            }
         }
 
-        
+
 
         /// <summary>
         /// Reads the content of a stream into a string

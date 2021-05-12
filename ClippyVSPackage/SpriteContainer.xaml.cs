@@ -13,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using System.Threading.Tasks;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -56,23 +55,9 @@ namespace Recoding.ClippyVSPackage
         {
             _package = package;
 
-            var x = this.Owner;
-            // XXXX
-
-            //var svc = ThreadHelper.JoinableTaskFactory.Run(async delegate
-            //{
-            //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
-            //    var setingsManager= await AsyncServiceProvider.GlobalProvider.GetServiceAsync(typeof(SVsSettingsManager));
-            //    return setingsManager as ShellSettingsManager;
-            //});
-
             ThreadHelper.ThrowIfNotOnUIThread();
             var settingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
-           _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
-
-            //var shellSettingsManager = new ShellSettingsManager(package.set)
-            //writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
-            //_userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+            _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
             InitializeComponent();
 
@@ -306,11 +291,13 @@ namespace Recoding.ClippyVSPackage
             cm.IsOpen = true;
         }
 
-        private void cmdClose_Click(object sender, RoutedEventArgs e)
+        private async void cmdClose_Click(object sender, RoutedEventArgs e)
         {
             var window = this;
 
             _clippy.StartAnimation(ClippyAnimations.GoodBye, true);
+            // refactor this be handled by end event.
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.DoWork += (a, r) =>
@@ -320,10 +307,9 @@ namespace Recoding.ClippyVSPackage
                 this.Dispatcher.Invoke(new Action(() =>
                 {
                     window.Owner.Focus();
-
                     window.Close();
 
-                }), DispatcherPriority.Send);
+                }), DispatcherPriority.Render);
 
             };
             bgWorker.RunWorkerAsync();

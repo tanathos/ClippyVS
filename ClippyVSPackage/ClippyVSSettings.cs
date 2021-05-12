@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.Settings;
-using Microsoft.VisualStudio.Shell.Settings;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -24,11 +23,9 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         /// <param name="vsServiceProvider"></param>
         [ImportingConstructor]
-        public ClippyVSSettings(IServiceProvider vsServiceProvider)
+        public ClippyVSSettings(WritableSettingsStore store)
         {
-            var shellSettingsManager = new ShellSettingsManager(vsServiceProvider);
-            writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
-
+            writableSettingsStore = store;
             LoadSettings();
         }
 

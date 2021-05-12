@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Settings;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Settings;
+using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,9 +10,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
 namespace Recoding.ClippyVSPackage
@@ -51,9 +52,9 @@ namespace Recoding.ClippyVSPackage
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
                 Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
-                
+
                 // Add our command handlers for menu (commands must exist in the .vsct file)
-                
+
                 if (null != mcs)
                 {
                     // Create the command for the menu item.
@@ -73,7 +74,10 @@ namespace Recoding.ClippyVSPackage
         {
             var token = new CancellationToken();
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-            IClippyVSSettings settings = new ClippyVSSettings(ServiceProvider.GlobalProvider);
+            var shellSettingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+            var writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+
+            IClippyVSSettings settings = new ClippyVSSettings(writableSettingsStore);
             SpriteContainer container = new SpriteContainer(this);
 
             if (settings.ShowAtStartup)
