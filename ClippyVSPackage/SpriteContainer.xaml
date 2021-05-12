@@ -12,7 +12,7 @@
 		IsVisibleChanged="ClippySpriteContainer_IsVisibleChanged">
     <Window.Resources>
         <ContextMenu x:Key="cmButton">
-			<MenuItem x:Name="cmdRandom" Header="Surprise me" Click="CmdRandom_Click" />
+			<MenuItem x:Name="cmdRandom" Header="Surprise me" Click="cmdRandom_Click" />
             <Separator />
             <MenuItem x:Name="cmdClose" Header="Please, leave me alone" Click="cmdClose_Click"  />
             <Separator />

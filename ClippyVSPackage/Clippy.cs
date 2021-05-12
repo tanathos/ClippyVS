@@ -13,6 +13,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Resources;
 using System.Windows.Threading;
+using System.Linq;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -49,12 +50,12 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The with of the frame
         /// </summary>
-        private static int ClipWidth = 124;
+        private static int clipWidth = 124;
 
         /// <summary>
         /// The height of the frame
         /// </summary>
-        private static int ClipHeight = 93;
+        private static int clipHeight = 93;
 
         /// <summary>
         /// Seconds between a random idle animation and another
@@ -65,9 +66,9 @@ namespace Recoding.ClippyVSPackage
         /// When is true it means an animation is actually running
         /// </summary>
         public bool IsAnimating { get; set; }
-        public static int ClipHeight1 { get => ClipHeight; set => ClipHeight = value; }
-        public static int ClipWidth1 { get => ClipWidth; set => ClipWidth = value; }
-        public List<ClippyAnimations> AllAnimations1 { get => AllAnimations; set => AllAnimations = value; }
+        public static int ClipHeight { get => ClipHeight; set => ClipHeight = value; }
+        public static int ClipWidth { get => ClipWidth; set => ClipWidth = value; }
+        public List<ClippyAnimations> AllAnimations { get => allAnimations; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -90,7 +91,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        private List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
+        private List<ClippyAnimations> allAnimations = new List<ClippyAnimations>();
 
         /// <summary>
         /// The time dispatcher to perform the animations in a random way
@@ -118,11 +119,11 @@ namespace Recoding.ClippyVSPackage
             if (Animations == null)
                 RegisterAnimations();
 
-            AllAnimations1 = new List<ClippyAnimations>();
-            var values = Enum.GetValues(typeof(ClippyAnimations));
-            foreach (ClippyAnimations val in values)
-                AllAnimations1.Add(val);
 
+            //XX Requires testing..
+            allAnimations = new List<ClippyAnimations>();
+            var values = Enum.GetValues(typeof(ClippyAnimations));
+            allAnimations.AddRange(values.Cast<ClippyAnimations>());
             RegisterIdleRandomAnimations();
         }
 
@@ -159,10 +160,10 @@ namespace Recoding.ClippyVSPackage
                     }
 
                     // X
-                    DiscreteDoubleKeyFrame xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth1 * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                    DiscreteDoubleKeyFrame xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                     // Y
-                    DiscreteDoubleKeyFrame yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight1 * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                    DiscreteDoubleKeyFrame yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                     timeOffset += ((double)frame.Duration / 1000);
 
