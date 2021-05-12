@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace Recoding.ClippyVSPackage
 {
     [Guid(Constants.guidOptionsPage)]
-    public class OptionsPage : Microsoft.VisualStudio.Shell.DialogPage
+    public class OptionsPage : DialogPage
     {
         private WritableSettingsStore _store;
         IClippyVSSettings settings

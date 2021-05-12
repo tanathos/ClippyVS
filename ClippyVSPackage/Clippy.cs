@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -202,20 +203,28 @@ namespace Recoding.ClippyVSPackage
             StartAnimation(IdleAnimations[random_int]);
         }
 
+        public void StartAnimation(ClippyAnimations animations, bool byPassCurrentAnimation = false)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(
+                async delegate {
+                    await StartAnimationAsync(ClippyAnimations.Idle1_1,byPassCurrentAnimation);
+                });
+        }
+
         /// <summary>
         /// Start a specific animation
         /// </summary>
         /// <param name="animationType"></param>
-        public async void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
+        public async System.Threading.Tasks.Task StartAnimationAsync(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             if (!IsAnimating || byPassCurrentAnimation)
             {
                 IsAnimating = true;
-
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
                 clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
             }
+            
         }
 
 
