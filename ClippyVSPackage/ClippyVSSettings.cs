@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -71,7 +72,7 @@ namespace Recoding.ClippyVSPackage
                     Debug.WriteLine("Setting loaded which is {0}", ShowAtStartup);
                 }
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 Debug.Fail(ex.Message);
             }

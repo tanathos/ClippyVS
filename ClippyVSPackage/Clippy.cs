@@ -34,7 +34,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The sprite with all the animation stages for Clippy
         /// </summary>
-        public BitmapSource Sprite;
+        private BitmapSource Sprite;
 
         /// <summary>
         /// The actual Clippy container that works as a clipping mask
@@ -44,27 +44,30 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The image that holds the sprite
         /// </summary>
-        public Image clippedImage;
+        private Image clippedImage;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth = 124;
+        private static int ClipWidth = 124;
 
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight = 93;
+        private static int ClipHeight = 93;
 
         /// <summary>
         /// Seconds between a random idle animation and another
         /// </summary>
-        private static int IdleAnimationTimeout = 45;
+        private const int IdleAnimationTimeout = 45;
 
         /// <summary>
         /// When is true it means an animation is actually running
         /// </summary>
         public bool IsAnimating { get; set; }
+        public static int ClipHeight1 { get => ClipHeight; set => ClipHeight = value; }
+        public static int ClipWidth1 { get => ClipWidth; set => ClipWidth = value; }
+        public List<ClippyAnimations> AllAnimations1 { get => AllAnimations; set => AllAnimations = value; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -87,7 +90,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        public List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
+        private List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
 
         /// <summary>
         /// The time dispatcher to perform the animations in a random way
@@ -101,9 +104,13 @@ namespace Recoding.ClippyVSPackage
         {
             this.Sprite = new BitmapImage(new Uri(spriteResourceUri, UriKind.RelativeOrAbsolute));
 
-            clippedImage = new System.Windows.Controls.Image();
-            clippedImage.Source = Sprite;
-            clippedImage.Stretch = Stretch.None;
+            clippedImage = new Image
+            {
+                Source = Sprite,
+                Stretch = Stretch.None
+            };
+
+            if (canvas == null) return;
 
             canvas.Children.Clear();
             canvas.Children.Add(clippedImage);
@@ -111,14 +118,10 @@ namespace Recoding.ClippyVSPackage
             if (Animations == null)
                 RegisterAnimations();
 
-            this.AllAnimations = new List<ClippyAnimations>();
-
+            AllAnimations1 = new List<ClippyAnimations>();
             var values = Enum.GetValues(typeof(ClippyAnimations));
-
             foreach (ClippyAnimations val in values)
-            {
-                this.AllAnimations.Add(val);
-            }
+                AllAnimations1.Add(val);
 
             RegisterIdleRandomAnimations();
         }
@@ -131,11 +134,11 @@ namespace Recoding.ClippyVSPackage
             Uri uri = new Uri(animationsResourceUri, UriKind.RelativeOrAbsolute);
             StreamResourceInfo info = Application.GetResourceStream(uri);
 
-            List<Animation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Animation>>(StreamToString(info.Stream));
+            List<ClippyAnimation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippyAnimation>>(StreamToString(info.Stream));
 
             Animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
 
-            foreach (Animation animation in storedAnimations)
+            foreach (ClippyAnimation animation in storedAnimations)
             {
                 DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames();
                 xDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
@@ -156,10 +159,10 @@ namespace Recoding.ClippyVSPackage
                     }
 
                     // X
-                    DiscreteDoubleKeyFrame xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                    DiscreteDoubleKeyFrame xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth1 * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                     // Y
-                    DiscreteDoubleKeyFrame yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                    DiscreteDoubleKeyFrame yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight1 * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                     timeOffset += ((double)frame.Duration / 1000);
 
@@ -227,7 +230,7 @@ namespace Recoding.ClippyVSPackage
             
         }
 
-
+        
 
         /// <summary>
         /// Reads the content of a stream into a string

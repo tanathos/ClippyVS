@@ -9,6 +9,8 @@ using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -40,7 +42,6 @@ namespace Recoding.ClippyVSPackage
 
         private double RelativeTop { get; set; }
 
-        private DTE Dte;
         private Events events;
         private DocumentEvents docEvents;
         private BuildEvents buildEvents;
@@ -53,6 +54,7 @@ namespace Recoding.ClippyVSPackage
         /// <param name="package"></param>
         public SpriteContainer(AsyncPackage package)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             _package = package;
 
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -61,10 +63,13 @@ namespace Recoding.ClippyVSPackage
 
             InitializeComponent();
 
-            this.Owner = System.Windows.Application.Current.MainWindow;
+            this.Owner = Application.Current.MainWindow;
             this.Topmost = false;
 
             #region Register event handlers
+            if (package == null) 
+                throw new ArgumentException("Package was null");
+
             IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
                 .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
             //if (activityLog == null) return;
@@ -75,13 +80,13 @@ namespace Recoding.ClippyVSPackage
             docEvents = dte.Events.DocumentEvents;
             buildEvents = dte.Events.BuildEvents;
 
-            RegisterToDTEEvents();
+            _ = RegisterToDTEEventsAsync();
 
-            this.Owner.LocationChanged += Owner_LocationChanged;
-            this.Owner.StateChanged += Owner_StateOrSizeChanged;
-            this.Owner.SizeChanged += Owner_StateOrSizeChanged;
+            Owner.LocationChanged += Owner_LocationChanged;
+            Owner.StateChanged += Owner_StateOrSizeChanged;
+            Owner.SizeChanged += Owner_StateOrSizeChanged;
 
-            this.LocationChanged += SpriteContainer_LocationChanged;
+            LocationChanged += SpriteContainer_LocationChanged;
 
             #endregion
 
@@ -95,15 +100,15 @@ namespace Recoding.ClippyVSPackage
 
             try
             {
-                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeTop"))
-                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeTop"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeTop)))
+                    storedRelativeTop = double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)), CultureInfo.InvariantCulture);
 
-                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeLeft"))
-                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeLeft"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeLeft)))
+                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)), CultureInfo.InvariantCulture);
             }
-            catch
+            catch (Exception e)
             {
-
+                Debug.Fail(e.Message);
             }
 
             if (!storedRelativeTop.HasValue || !storedRelativeLeft.HasValue)

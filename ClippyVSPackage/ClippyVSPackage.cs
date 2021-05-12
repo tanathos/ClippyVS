@@ -25,14 +25,15 @@ namespace Recoding.ClippyVSPackage
 
     [Guid(Constants.guidClippyVSPkgString)]
     [ProvideOptionPageAttribute(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
-    public sealed class ClippyVSPackage : AsyncPackage
+    public sealed class ClippyVisualStudioPackage : AsyncPackage
     {
         /// <summary>
         /// Default ctor
         /// </summary>
-        public ClippyVSPackage()
+        public ClippyVisualStudioPackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
+
         }
 
         #region Package Members
@@ -68,6 +69,7 @@ namespace Recoding.ClippyVSPackage
             {
                 MessageBox.Show("Exception !");
             }
+            await Recoding.ClippyVSPackage.Command1.InitializeAsync(this);
         }
 
         async void MainWindow_ContentRendered(object sender, EventArgs e)
