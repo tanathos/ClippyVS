@@ -54,7 +54,6 @@ namespace Recoding.ClippyVSPackage
         /// <param name="package"></param>
         public SpriteContainer(AsyncPackage package)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             _package = package;
 
             ThreadHelper.ThrowIfNotOnUIThread();

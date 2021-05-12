@@ -66,8 +66,8 @@ namespace Recoding.ClippyVSPackage
         /// When is true it means an animation is actually running
         /// </summary>
         public bool IsAnimating { get; set; }
-        public static int ClipHeight { get => ClipHeight; set => ClipHeight = value; }
-        public static int ClipWidth { get => ClipWidth; set => ClipWidth = value; }
+        public static int ClipHeight { get => clipHeight; set => clipHeight = value; }
+        public static int ClipWidth { get => clipWidth; set => clipWidth = value; }
         public List<ClippyAnimations> AllAnimations { get => allAnimations; }
 
         /// <summary>

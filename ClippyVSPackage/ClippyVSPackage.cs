@@ -33,7 +33,6 @@ namespace Recoding.ClippyVSPackage
         public ClippyVisualStudioPackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
-
         }
 
         #region Package Members
@@ -63,13 +62,14 @@ namespace Recoding.ClippyVSPackage
                     MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
                     mcs.AddCommand(menuItem);
                 }
-                await Command1.InitializeAsync(this);
+                await Command1.InitializeAsync(this).ConfigureAwait(true);
             }
             catch (Exception e)
             {
-                MessageBox.Show("Exception !");
+                MessageBox.Show("Exception !" + e.Message);
             }
-            await Recoding.ClippyVSPackage.Command1.InitializeAsync(this);
+
+            await Command1.InitializeAsync(this).ConfigureAwait(true);
         }
 
         async void MainWindow_ContentRendered(object sender, EventArgs e)
