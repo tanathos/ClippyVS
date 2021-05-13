@@ -62,7 +62,7 @@ namespace Recoding.ClippyVSPackage
                     MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
                     mcs.AddCommand(menuItem);
                 }
-                await Command1.InitializeAsync(this).ConfigureAwait(true);
+                
             }
             catch (Exception e)
             {

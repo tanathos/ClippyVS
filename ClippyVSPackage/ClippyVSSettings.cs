@@ -2,7 +2,6 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -12,6 +11,16 @@ namespace Recoding.ClippyVSPackage
     [Export(typeof(IClippyVSSettings))]
     public class ClippyVSSettings : IClippyVSSettings
     {
+        /// <summary>
+        /// If true shows clippy at the VS startup
+        /// </summary>
+        public bool ShowAtStartup { get; set; } = true;
+
+        /// <summary>
+        /// String identifier for startup boolean in settings store
+        /// </summary>
+        private const string ShowAtStartupStoreName = "ShowAtStartup";
+
         /// <summary>
         /// The real store in which the settings will be saved
         /// </summary>
@@ -32,12 +41,7 @@ namespace Recoding.ClippyVSPackage
 
         #endregion
 
-        /// <summary>
-        /// If true shows clippy at the VS startup
-        /// </summary>
-        public bool ShowAtStartup { get; set; } = true;
-
-        /// <summary>
+         /// <summary>
         /// Performs the store of the instance of this interface to the user's settings
         /// </summary>
         public void Store()
@@ -49,7 +53,7 @@ namespace Recoding.ClippyVSPackage
                     writableSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
                 }
 
-                writableSettingsStore.SetBoolean(Constants.SettingsCollectionPath, "ShowAtStartup", ShowAtStartup);
+                writableSettingsStore.SetBoolean(Constants.SettingsCollectionPath, ShowAtStartupStoreName, ShowAtStartup);
                 Debug.WriteLine("Setting stored which is {0}", ShowAtStartup);
             }
             catch (Exception ex)
@@ -66,9 +70,9 @@ namespace Recoding.ClippyVSPackage
             try
             {
                 // Tries to retrieve the configurations if previously saved
-                if (writableSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "ShowAtStartup"))
+                if (writableSettingsStore.PropertyExists(Constants.SettingsCollectionPath, ShowAtStartupStoreName))
                 {
-                    ShowAtStartup = writableSettingsStore.GetBoolean(Constants.SettingsCollectionPath, "ShowAtStartup");
+                    ShowAtStartup = writableSettingsStore.GetBoolean(Constants.SettingsCollectionPath, ShowAtStartupStoreName);
                     Debug.WriteLine("Setting loaded which is {0}", ShowAtStartup);
                 }
             }
