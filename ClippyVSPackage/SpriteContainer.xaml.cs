@@ -143,12 +143,12 @@ namespace Recoding.ClippyVSPackage
 
             #endregion
 
-            var values = Enum.GetValues(typeof(ClippyAnimations));
+            var values = Enum.GetValues(typeof(ClippyAnimation));
 
             //// TEMP: create a voice for each animation in the context menu
             //var pMenu = (ContextMenu)this.Resources["cmButton"];
 
-            //foreach (ClippyAnimations val in values)
+            //foreach (ClippySingleAnimation val in values)
             //{
             //    var menuItem = new MenuItem()
             //    {
@@ -161,7 +161,7 @@ namespace Recoding.ClippyVSPackage
             //// /TEMP
 
             _clippy = new Clippy((Canvas)FindName("ClippyCanvas"));
-            _clippy.StartAnimation(ClippyAnimations.Idle1_1);
+            _clippy.StartAnimation(ClippyAnimation.Idle1_1);
 
         }
 
@@ -201,47 +201,47 @@ namespace Recoding.ClippyVSPackage
 
         private void ProjectItemsEvents_ItemRenamed(EnvDTE.ProjectItem ProjectItem, string OldName)
         {
-            _clippy.StartAnimation(ClippyAnimations.Writing, true);
+            _clippy.StartAnimation(ClippyAnimation.Writing, true);
         }
 
         private void ProjectItemsEvents_ItemRemoved(EnvDTE.ProjectItem ProjectItem)
         {
-            _clippy.StartAnimation(ClippyAnimations.EmptyTrash, true);
+            _clippy.StartAnimation(ClippyAnimation.EmptyTrash, true);
         }
 
         private void ProjectItemsEvents_ItemAdded(EnvDTE.ProjectItem ProjectItem)
         {
-            _clippy.StartAnimation(ClippyAnimations.Congratulate, true);
+            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
         }
 
         private void FindEventsClass_FindDone(EnvDTE.vsFindResult Result, bool Cancelled)
         {
-            _clippy.StartAnimation(ClippyAnimations.Searching, true);
+            _clippy.StartAnimation(ClippyAnimation.Searching, true);
         }
 
         private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            _clippy.StartAnimation(ClippyAnimations.Congratulate, true);
+            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
         }
 
         private void DocEvents_DocumentClosing(EnvDTE.Document Document)
         {
-            _clippy.StartAnimation(ClippyAnimations.GestureDown, true);
+            _clippy.StartAnimation(ClippyAnimation.GestureDown, true);
         }
 
         private void BuildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            _clippy.StartAnimation(ClippyAnimations.Processing, true); // GetTechy
+            _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
         }
 
         private void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
         {
-            _clippy.StartAnimation(ClippyAnimations.Save, true);
+            _clippy.StartAnimation(ClippyAnimation.Save, true);
         }
 
         private void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
         {
-            _clippy.StartAnimation(ClippyAnimations.LookUp);
+            _clippy.StartAnimation(ClippyAnimation.LookUp);
         }
 
         #endregion
@@ -299,7 +299,7 @@ namespace Recoding.ClippyVSPackage
         {
             var window = this;
 
-            _clippy.StartAnimation(ClippyAnimations.GoodBye, true);
+            _clippy.StartAnimation(ClippyAnimation.GoodBye, true);
             // refactor this be handled by end event.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -329,7 +329,7 @@ namespace Recoding.ClippyVSPackage
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
-            ClippyAnimations animation = (ClippyAnimations)Enum.Parse(typeof(ClippyAnimations), (sender as MenuItem).Header.ToString());
+            ClippyAnimation animation = (ClippyAnimation)Enum.Parse(typeof(ClippyAnimation), (sender as MenuItem).Header.ToString());
 
             _clippy.StartAnimation(animation, true);
         }
@@ -351,7 +351,7 @@ namespace Recoding.ClippyVSPackage
         {
             if (this.IsVisible)
             {
-                _clippy.StartAnimation(ClippyAnimations.Idle1_1, true);
+                _clippy.StartAnimation(ClippyAnimation.Idle1_1, true);
             }
         }
 

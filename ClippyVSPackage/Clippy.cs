@@ -68,7 +68,7 @@ namespace Recoding.ClippyVSPackage
         public bool IsAnimating { get; set; }
         public static int ClipHeight { get => clipHeight; set => clipHeight = value; }
         public static int ClipWidth { get => clipWidth; set => clipWidth = value; }
-        public List<ClippyAnimations> AllAnimations { get => allAnimations; }
+        public List<ClippyAnimation> AllAnimations { get => allAnimations; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -78,20 +78,20 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        private static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() {
-            ClippyAnimations.Idle1_1,
-            ClippyAnimations.IdleRopePile,
-            ClippyAnimations.IdleAtom,
-            ClippyAnimations.IdleEyeBrowRaise,
-            ClippyAnimations.IdleFingerTap,
-            ClippyAnimations.IdleHeadScratch,
-            ClippyAnimations.IdleSideToSide,
-            ClippyAnimations.IdleSnooze };
+        private static List<ClippyAnimation> IdleAnimations = new List<ClippyAnimation>() {
+            ClippyAnimation.Idle1_1,
+            ClippyAnimation.IdleRopePile,
+            ClippyAnimation.IdleAtom,
+            ClippyAnimation.IdleEyeBrowRaise,
+            ClippyAnimation.IdleFingerTap,
+            ClippyAnimation.IdleHeadScratch,
+            ClippyAnimation.IdleSideToSide,
+            ClippyAnimation.IdleSnooze };
 
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        private List<ClippyAnimations> allAnimations = new List<ClippyAnimations>();
+        private List<ClippyAnimation> allAnimations = new List<ClippyAnimation>();
 
         /// <summary>
         /// The time dispatcher to perform the animations in a random way
@@ -121,9 +121,9 @@ namespace Recoding.ClippyVSPackage
 
 
             //XX Requires testing..
-            allAnimations = new List<ClippyAnimations>();
-            var values = Enum.GetValues(typeof(ClippyAnimations));
-            allAnimations.AddRange(values.Cast<ClippyAnimations>());
+            allAnimations = new List<ClippyAnimation>();
+            var values = Enum.GetValues(typeof(ClippyAnimation));
+            allAnimations.AddRange(values.Cast<ClippyAnimation>());
             RegisterIdleRandomAnimations();
         }
 
@@ -135,11 +135,11 @@ namespace Recoding.ClippyVSPackage
             Uri uri = new Uri(animationsResourceUri, UriKind.RelativeOrAbsolute);
             StreamResourceInfo info = Application.GetResourceStream(uri);
 
-            List<ClippyAnimation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippyAnimation>>(StreamToString(info.Stream));
+            List<ClippySingleAnimation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippySingleAnimation>>(StreamToString(info.Stream));
 
             Animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
 
-            foreach (ClippyAnimation animation in storedAnimations)
+            foreach (ClippySingleAnimation animation in storedAnimations)
             {
                 DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames
                 {
@@ -155,7 +155,7 @@ namespace Recoding.ClippyVSPackage
                 int lastRow = 0;
                 double timeOffset = 0;
 
-                foreach (Recoding.ClippyVSPackage.Configurations.Frame frame in animation.Frames)
+                foreach (Configurations.Frame frame in animation.Frames)
                 {
                     if (frame.ImagesOffsets != null)
                     {
@@ -211,11 +211,11 @@ namespace Recoding.ClippyVSPackage
             StartAnimation(IdleAnimations[random_int]);
         }
 
-        public void StartAnimation(ClippyAnimations animations, bool byPassCurrentAnimation = false)
+        public void StartAnimation(ClippyAnimation animations, bool byPassCurrentAnimation = false)
         {
             ThreadHelper.JoinableTaskFactory.Run(
                 async delegate {
-                    await StartAnimationAsync(ClippyAnimations.Idle1_1,byPassCurrentAnimation);
+                    await StartAnimationAsync(ClippyAnimation.Idle1_1,byPassCurrentAnimation);
                 });
         }
 
@@ -223,7 +223,7 @@ namespace Recoding.ClippyVSPackage
         /// Start a specific animation
         /// </summary>
         /// <param name="animationType"></param>
-        public async System.Threading.Tasks.Task StartAnimationAsync(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
+        public async System.Threading.Tasks.Task StartAnimationAsync(ClippyAnimation animationType, bool byPassCurrentAnimation = false)
         {
             if (!IsAnimating || byPassCurrentAnimation)
             {

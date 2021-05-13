@@ -87,7 +87,7 @@
     <Compile Include="Configurations\Animation.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Configurations\ClippyAnimations.cs" />
+    <Compile Include="Configurations\ClippyAnimation.cs" />
     <Compile Include="Configurations\ColumnRow.cs" />
     <Compile Include="Configurations\Frame.cs" />
     <Compile Include="Constants.cs" />
