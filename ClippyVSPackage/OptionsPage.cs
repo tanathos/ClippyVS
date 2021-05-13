@@ -27,13 +27,13 @@ namespace Recoding.ClippyVSPackage
             if (_store.PropertyExists(Constants.SettingsCollectionPath, "ShowAtStartup"))
             {
                 res = _store.GetBoolean(Constants.SettingsCollectionPath, "ShowAtStartup");
-                return new ClippyVSSettings(_store)
-                {
-                    ShowAtStartup = res
-                };
+                
             }
-            return null;
 
+            return new ClippyVSSettings(_store)
+            {
+                ShowAtStartup = res
+            };
         }
 
         public OptionsPage()
