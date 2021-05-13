@@ -68,8 +68,6 @@ namespace Recoding.ClippyVSPackage
             {
                 MessageBox.Show("Exception !" + e.Message);
             }
-
-            await Command1.InitializeAsync(this).ConfigureAwait(true);
         }
 
         async void MainWindow_ContentRendered(object sender, EventArgs e)

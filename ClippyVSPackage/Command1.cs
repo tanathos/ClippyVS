@@ -33,13 +33,13 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private Command1(AsyncPackage package, OleMenuCommandService commandService)
+        private Command1(AsyncPackage asyncPackage, OleMenuCommandService commandService)
         {
-            this.package = package ?? throw new ArgumentNullException(nameof(package));
+            package = asyncPackage ?? throw new ArgumentNullException(nameof(asyncPackage));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem = new MenuCommand(this.Execute, menuCommandID);
+            var menuItem = new MenuCommand(Execute, menuCommandID);
             commandService.AddCommand(menuItem);
         }
 

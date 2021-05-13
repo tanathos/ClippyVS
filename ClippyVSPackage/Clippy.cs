@@ -78,7 +78,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() {
+        private static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() {
             ClippyAnimations.Idle1_1,
             ClippyAnimations.IdleRopePile,
             ClippyAnimations.IdleAtom,
@@ -141,11 +141,15 @@ namespace Recoding.ClippyVSPackage
 
             foreach (ClippyAnimation animation in storedAnimations)
             {
-                DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames();
-                xDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
+                DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames
+                {
+                    FillBehavior = FillBehavior.HoldEnd
+                };
 
-                DoubleAnimationUsingKeyFrames yDoubleAnimation = new DoubleAnimationUsingKeyFrames();
-                yDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
+                DoubleAnimationUsingKeyFrames yDoubleAnimation = new DoubleAnimationUsingKeyFrames
+                {
+                    FillBehavior = FillBehavior.HoldEnd
+                };
 
                 int lastCol = 0;
                 int lastRow = 0;
