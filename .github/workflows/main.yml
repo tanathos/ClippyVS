@@ -8,10 +8,9 @@ name: VS Marketplace Publisher
 uses: 
   MrLuje/vs-marketplace-publisher@v2.1.0
   with:
-    github_token: # default is ${{ github.token }}
-    # Personal access token to access your marketplace account.
+    github_token:
+    ${{ github.token }}
     pat: 
-    # Path to the extension manifest.
     manifestPath: source.extension.vsixmanifest
     # Path to the extension package. Exclusive with useLatestReleaseAsset.
     vsixPath: # optional
