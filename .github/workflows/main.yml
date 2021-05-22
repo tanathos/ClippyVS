@@ -2,13 +2,12 @@ on:
   push:
     tags:
       - "*"
-
-- name: VS Marketplace Publisher
+name: VS Marketplace Publisher
   # You may pin to the exact commit or the version.
   # uses: MrLuje/vs-marketplace-publisher@62199fd6e3b00284d6ec8e113573fdccfcefc4fa
-  uses: MrLuje/vs-marketplace-publisher@v2.1.0
+uses: 
+  MrLuje/vs-marketplace-publisher@v2.1.0
   with:
-    # Token to access your github repository.
     github_token: # default is ${{ github.token }}
     # Personal access token to access your marketplace account.
     pat: 
