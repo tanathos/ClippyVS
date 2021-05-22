@@ -3,22 +3,18 @@ on:
     tags:
       - "*"
 
-name: Deploy Extension
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - run: npm ci
-      - name: Publish to Open VSX Registry
-        uses: HaaLeo/publish-vscode-extension@v0
-        with:
-          pat: ${{ secrets.OPEN_VSX_TOKEN }}
-      - name: Publish to Visual Studio Marketplace
-        uses: HaaLeo/publish-vscode-extension@v0
-        with:
-          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-          registryUrl: https://marketplace.visualstudio.com
+- name: VS Marketplace Publisher
+  # You may pin to the exact commit or the version.
+  # uses: MrLuje/vs-marketplace-publisher@62199fd6e3b00284d6ec8e113573fdccfcefc4fa
+  uses: MrLuje/vs-marketplace-publisher@v2.1.0
+  with:
+    # Token to access your github repository.
+    github_token: # default is ${{ github.token }}
+    # Personal access token to access your marketplace account.
+    pat: 
+    # Path to the extension manifest.
+    manifestPath: source.extension.vsixmanifest
+    # Path to the extension package. Exclusive with useLatestReleaseAsset.
+    vsixPath: # optional
+    # Use the latest release from your repository that contains a vsix. Exclusive with vsixPath.
+    useLatestReleaseAsset: # optional
