@@ -81,6 +81,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AssistantBase.cs" />
     <Compile Include="Clippy.cs" />
     <Compile Include="ClippyVSSettings.cs" />
     <Compile Include="Command1.cs" />
@@ -150,6 +151,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Command1.png" />
+    <Content Include="Resources\Merlin\agent.js" />
+    <Resource Include="Resources\Merlin\map.png" />
+    <Content Include="Resources\Merlin\sounds-mp3.js" />
+    <Content Include="Resources\Merlin\sounds-ogg.js" />
     <Content Include="Resources\preview.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
