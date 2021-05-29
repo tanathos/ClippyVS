@@ -3,9 +3,6 @@ using Microsoft.VisualStudio.Shell;
 using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -20,7 +17,7 @@ namespace Recoding.ClippyVSPackage
     /// <summary>
     /// The core object that represents Clippy and its animations
     /// </summary>
-    public class Clippy
+    public class Clippy : AssistantBase
     {
         /// <summary>
         /// The URI for the sprite with all the animation stages for Clippy
@@ -57,15 +54,6 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private static int clipHeight = 93;
 
-        /// <summary>
-        /// Seconds between a random idle animation and another
-        /// </summary>
-        private const int IdleAnimationTimeout = 45;
-
-        /// <summary>
-        /// When is true it means an animation is actually running
-        /// </summary>
-        public bool IsAnimating { get; set; }
         public static int ClipHeight { get => clipHeight; set => clipHeight = value; }
         public static int ClipWidth { get => clipWidth; set => clipWidth = value; }
         public List<ClippyAnimation> AllAnimations { get => allAnimations; }
@@ -233,22 +221,6 @@ namespace Recoding.ClippyVSPackage
                 clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
             }
             
-        }
-
-        
-
-        /// <summary>
-        /// Reads the content of a stream into a string
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        private static string StreamToString(Stream stream)
-        {
-            stream.Position = 0;
-            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
-            }
         }
     }
 }
