@@ -203,7 +203,7 @@ namespace Recoding.ClippyVSPackage
         {
             ThreadHelper.JoinableTaskFactory.Run(
                 async delegate {
-                    await StartAnimationAsync(ClippyAnimation.Idle1_1,byPassCurrentAnimation);
+                    await StartAnimationAsync(animations,byPassCurrentAnimation);
                 });
         }
 
