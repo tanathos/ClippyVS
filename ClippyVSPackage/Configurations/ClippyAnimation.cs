@@ -3,7 +3,7 @@
     /// <summary>
     /// List of the animations clippy can do
     /// </summary>
-    public enum ClippyAnimations
+    public enum ClippyAnimation
     {
         Alert,
         CheckingSomething,

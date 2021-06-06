@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.Settings;
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.Settings;
@@ -6,6 +8,7 @@ using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,7 +19,7 @@ namespace Recoding.ClippyVSPackage
     /// <summary>
     /// Interaction logic for SpriteContainer.xaml
     /// </summary>
-    public partial class SpriteContainer : Window
+    public partial class SpriteContainer : System.Windows.Window
     {
         /// <summary>
         /// The instance of Clippy, our hero
@@ -26,54 +29,61 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// This VSIX package
         /// </summary>
-        private Package _package;
+        private AsyncPackage _package;
 
         /// <summary>
         /// The settings store of this package, to save preferences about the extension
         /// </summary>
         private WritableSettingsStore _userSettingsStore;
-        
+
         private double RelativeLeft { get; set; }
 
         private double RelativeTop { get; set; }
 
-        private EnvDTE80.DTE2 dte;
-        private EnvDTE.Events events;
-        private EnvDTE.DocumentEventsClass docEvents;
-        private EnvDTE.BuildEventsClass buildEvents;
-        private EnvDTE.ProjectItemsEvents projectItemsEvents;
-        private EnvDTE.ProjectItemsEvents csharpProjectItemsEvents;
+        private Events events;
+        private DocumentEvents docEvents;
+        private BuildEvents buildEvents;
+        private ProjectItemsEvents projectItemsEvents;
+        private ProjectItemsEvents csharpProjectItemsEvents;
 
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="package"></param>
-        public SpriteContainer(Package package)
+        public SpriteContainer(AsyncPackage package)
         {
             _package = package;
 
-            SettingsManager settingsManager = new ShellSettingsManager(_package);
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var settingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
             _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
             InitializeComponent();
 
-            this.Owner = System.Windows.Application.Current.MainWindow;
+            this.Owner = Application.Current.MainWindow;
             this.Topmost = false;
 
             #region Register event handlers
+            if (package == null)
+                throw new ArgumentException("Package was null");
 
-            dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(SDTE));
+            IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
+                .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
+            //if (activityLog == null) return;
+            //System.Windows.Forms.MessageBox.Show("Found the activity log service.");
+            ThreadHelper.ThrowIfNotOnUIThread();
+            DTE dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
             events = dte.Events;
-            docEvents = (EnvDTE.DocumentEventsClass)dte.Events.DocumentEvents;
-            buildEvents = (EnvDTE.BuildEventsClass)dte.Events.BuildEvents;
+            docEvents = dte.Events.DocumentEvents;
+            buildEvents = dte.Events.BuildEvents;
 
             RegisterToDTEEvents();
 
-            this.Owner.LocationChanged += Owner_LocationChanged;
-            this.Owner.StateChanged += Owner_StateOrSizeChanged;
-            this.Owner.SizeChanged += Owner_StateOrSizeChanged;
+            Owner.LocationChanged += Owner_LocationChanged;
+            Owner.StateChanged += Owner_StateOrSizeChanged;
+            Owner.SizeChanged += Owner_StateOrSizeChanged;
 
-            this.LocationChanged += SpriteContainer_LocationChanged;
+            LocationChanged += SpriteContainer_LocationChanged;
 
             #endregion
 
@@ -87,15 +97,15 @@ namespace Recoding.ClippyVSPackage
 
             try
             {
-                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeTop"))
-                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeTop"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeTop)))
+                    storedRelativeTop = double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)), CultureInfo.InvariantCulture);
 
-                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "RelativeLeft"))
-                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, "RelativeLeft"));
+                if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeLeft)))
+                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)), CultureInfo.InvariantCulture);
             }
-            catch
+            catch (Exception e)
             {
-
+                Debug.Fail(e.Message);
             }
 
             if (!storedRelativeTop.HasValue || !storedRelativeLeft.HasValue)
@@ -131,12 +141,12 @@ namespace Recoding.ClippyVSPackage
 
             #endregion
 
-            var values = Enum.GetValues(typeof(ClippyAnimations));
+            var values = Enum.GetValues(typeof(ClippyAnimation));
 
             //// TEMP: create a voice for each animation in the context menu
             //var pMenu = (ContextMenu)this.Resources["cmButton"];
 
-            //foreach (ClippyAnimations val in values)
+            //foreach (ClippySingleAnimation val in values)
             //{
             //    var menuItem = new MenuItem()
             //    {
@@ -148,9 +158,9 @@ namespace Recoding.ClippyVSPackage
             //}
             //// /TEMP
 
-            _clippy = new Clippy((Canvas)this.FindName("ClippyCanvas"));
+            _clippy = new Clippy((Canvas)FindName("ClippyCanvas"));
+            _clippy.StartAnimation(ClippyAnimation.Idle1_1);
 
-            _clippy.StartAnimation(ClippyAnimations.Idle1_1);
         }
 
         private void RegisterToDTEEvents()
@@ -162,7 +172,12 @@ namespace Recoding.ClippyVSPackage
             buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
             buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
 
-            EnvDTE80.Events2 events2 = dte.Events as EnvDTE80.Events2;
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
+
+
+            Events2 events2 = dte.Events as Events2;
             if (events2 != null)
             {
                 this.projectItemsEvents = events2.ProjectItemsEvents;
@@ -184,47 +199,47 @@ namespace Recoding.ClippyVSPackage
 
         private void ProjectItemsEvents_ItemRenamed(EnvDTE.ProjectItem ProjectItem, string OldName)
         {
-            _clippy.StartAnimation(ClippyAnimations.Writing, true);
+            _clippy.StartAnimation(ClippyAnimation.Writing, true);
         }
 
         private void ProjectItemsEvents_ItemRemoved(EnvDTE.ProjectItem ProjectItem)
         {
-            _clippy.StartAnimation(ClippyAnimations.EmptyTrash, true);
+            _clippy.StartAnimation(ClippyAnimation.EmptyTrash, true);
         }
 
         private void ProjectItemsEvents_ItemAdded(EnvDTE.ProjectItem ProjectItem)
         {
-            _clippy.StartAnimation(ClippyAnimations.Congratulate, true);
+            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
         }
 
         private void FindEventsClass_FindDone(EnvDTE.vsFindResult Result, bool Cancelled)
         {
-            _clippy.StartAnimation(ClippyAnimations.Searching, true);
+            _clippy.StartAnimation(ClippyAnimation.Searching, true);
         }
 
         private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            _clippy.StartAnimation(ClippyAnimations.Congratulate, true);
+            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
         }
 
         private void DocEvents_DocumentClosing(EnvDTE.Document Document)
         {
-            _clippy.StartAnimation(ClippyAnimations.GestureDown, true);
+            _clippy.StartAnimation(ClippyAnimation.GestureDown, true);
         }
 
         private void BuildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            _clippy.StartAnimation(ClippyAnimations.Processing, true); // GetTechy
+            _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
         }
 
         private void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
         {
-            _clippy.StartAnimation(ClippyAnimations.Save, true);
+            _clippy.StartAnimation(ClippyAnimation.Save, true);
         }
 
         private void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
         {
-            _clippy.StartAnimation(ClippyAnimations.LookUp);
+            _clippy.StartAnimation(ClippyAnimation.LookUp);
         }
 
         #endregion
@@ -278,11 +293,13 @@ namespace Recoding.ClippyVSPackage
             cm.IsOpen = true;
         }
 
-        private void cmdClose_Click(object sender, RoutedEventArgs e)
+        private async void cmdClose_Click(object sender, RoutedEventArgs e)
         {
             var window = this;
 
-            _clippy.StartAnimation(ClippyAnimations.GoodBye, true);
+            _clippy.StartAnimation(ClippyAnimation.GoodBye, true);
+            // refactor this be handled by end event.
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.DoWork += (a, r) =>
@@ -292,10 +309,9 @@ namespace Recoding.ClippyVSPackage
                 this.Dispatcher.Invoke(new Action(() =>
                 {
                     window.Owner.Focus();
-
                     window.Close();
 
-                }), DispatcherPriority.Send);
+                }), DispatcherPriority.Render);
 
             };
             bgWorker.RunWorkerAsync();
@@ -311,7 +327,7 @@ namespace Recoding.ClippyVSPackage
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
-            ClippyAnimations animation = (ClippyAnimations)Enum.Parse(typeof(ClippyAnimations), (sender as MenuItem).Header.ToString());
+            ClippyAnimation animation = (ClippyAnimation)Enum.Parse(typeof(ClippyAnimation), (sender as MenuItem).Header.ToString());
 
             _clippy.StartAnimation(animation, true);
         }
@@ -333,7 +349,7 @@ namespace Recoding.ClippyVSPackage
         {
             if (this.IsVisible)
             {
-                _clippy.StartAnimation(ClippyAnimations.Idle1_1, true);
+                _clippy.StartAnimation(ClippyAnimation.Idle1_1, true);
             }
         }
 
@@ -416,8 +432,8 @@ namespace Recoding.ClippyVSPackage
                     _userSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
                 }
 
-                _userSettingsStore.SetString(Constants.SettingsCollectionPath, "RelativeTop", relativeTop.ToString());
-                _userSettingsStore.SetString(Constants.SettingsCollectionPath, "RelativeLeft", relativeLeft.ToString());
+                _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeTop), relativeTop.ToString());
+                _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeLeft), relativeLeft.ToString());
             }
             catch
             {

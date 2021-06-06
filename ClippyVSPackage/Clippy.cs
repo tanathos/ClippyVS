@@ -1,10 +1,8 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+﻿
+using Microsoft.VisualStudio.Shell;
 using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,13 +10,14 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Resources;
 using System.Windows.Threading;
+using System.Linq;
 
 namespace Recoding.ClippyVSPackage
 {
     /// <summary>
     /// The core object that represents Clippy and its animations
     /// </summary>
-    public class Clippy
+    public class Clippy : AssistantBase
     {
         /// <summary>
         /// The URI for the sprite with all the animation stages for Clippy
@@ -33,7 +32,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The sprite with all the animation stages for Clippy
         /// </summary>
-        public BitmapSource Sprite;
+        private BitmapSource Sprite;
 
         /// <summary>
         /// The actual Clippy container that works as a clipping mask
@@ -43,27 +42,21 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The image that holds the sprite
         /// </summary>
-        public Image clippedImage;
+        private Image clippedImage;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth = 124;
+        private static int clipWidth = 124;
 
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight = 93;
+        private static int clipHeight = 93;
 
-        /// <summary>
-        /// Seconds between a random idle animation and another
-        /// </summary>
-        private static int IdleAnimationTimeout = 45;
-
-        /// <summary>
-        /// When is true it means an animation is actually running
-        /// </summary>
-        public bool IsAnimating { get; set; }
+        public static int ClipHeight { get => clipHeight; set => clipHeight = value; }
+        public static int ClipWidth { get => clipWidth; set => clipWidth = value; }
+        public List<ClippyAnimation> AllAnimations { get => allAnimations; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -73,20 +66,20 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() { 
-            ClippyAnimations.Idle1_1, 
-            ClippyAnimations.IdleRopePile, 
-            ClippyAnimations.IdleAtom, 
-            ClippyAnimations.IdleEyeBrowRaise, 
-            ClippyAnimations.IdleFingerTap, 
-            ClippyAnimations.IdleHeadScratch, 
-            ClippyAnimations.IdleSideToSide, 
-            ClippyAnimations.IdleSnooze };
+        private static List<ClippyAnimation> IdleAnimations = new List<ClippyAnimation>() {
+            ClippyAnimation.Idle1_1,
+            ClippyAnimation.IdleRopePile,
+            ClippyAnimation.IdleAtom,
+            ClippyAnimation.IdleEyeBrowRaise,
+            ClippyAnimation.IdleFingerTap,
+            ClippyAnimation.IdleHeadScratch,
+            ClippyAnimation.IdleSideToSide,
+            ClippyAnimation.IdleSnooze };
 
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        public List<ClippyAnimations> AllAnimations = new List<ClippyAnimations>();
+        private List<ClippyAnimation> allAnimations = new List<ClippyAnimation>();
 
         /// <summary>
         /// The time dispatcher to perform the animations in a random way
@@ -100,9 +93,13 @@ namespace Recoding.ClippyVSPackage
         {
             this.Sprite = new BitmapImage(new Uri(spriteResourceUri, UriKind.RelativeOrAbsolute));
 
-            clippedImage = new System.Windows.Controls.Image();
-            clippedImage.Source = Sprite;
-            clippedImage.Stretch = Stretch.None;
+            clippedImage = new Image
+            {
+                Source = Sprite,
+                Stretch = Stretch.None
+            };
+
+            if (canvas == null) return;
 
             canvas.Children.Clear();
             canvas.Children.Add(clippedImage);
@@ -110,15 +107,11 @@ namespace Recoding.ClippyVSPackage
             if (Animations == null)
                 RegisterAnimations();
 
-            this.AllAnimations = new List<ClippyAnimations>();
 
-            var values = Enum.GetValues(typeof(ClippyAnimations));
-
-            foreach (ClippyAnimations val in values)
-            {
-                this.AllAnimations.Add(val);
-            }
-
+            //XX Requires testing..
+            allAnimations = new List<ClippyAnimation>();
+            var values = Enum.GetValues(typeof(ClippyAnimation));
+            allAnimations.AddRange(values.Cast<ClippyAnimation>());
             RegisterIdleRandomAnimations();
         }
 
@@ -130,23 +123,27 @@ namespace Recoding.ClippyVSPackage
             Uri uri = new Uri(animationsResourceUri, UriKind.RelativeOrAbsolute);
             StreamResourceInfo info = Application.GetResourceStream(uri);
 
-            List<Animation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Animation>>(StreamToString(info.Stream));
+            List<ClippySingleAnimation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippySingleAnimation>>(StreamToString(info.Stream));
 
             Animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
 
-            foreach (Animation animation in storedAnimations)
+            foreach (ClippySingleAnimation animation in storedAnimations)
             {
-                DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames();
-                xDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
+                DoubleAnimationUsingKeyFrames xDoubleAnimation = new DoubleAnimationUsingKeyFrames
+                {
+                    FillBehavior = FillBehavior.HoldEnd
+                };
 
-                DoubleAnimationUsingKeyFrames yDoubleAnimation = new DoubleAnimationUsingKeyFrames();
-                yDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
+                DoubleAnimationUsingKeyFrames yDoubleAnimation = new DoubleAnimationUsingKeyFrames
+                {
+                    FillBehavior = FillBehavior.HoldEnd
+                };
 
                 int lastCol = 0;
                 int lastRow = 0;
                 double timeOffset = 0;
 
-                foreach (Recoding.ClippyVSPackage.Configurations.Frame frame in animation.Frames)
+                foreach (Configurations.Frame frame in animation.Frames)
                 {
                     if (frame.ImagesOffsets != null)
                     {
@@ -185,7 +182,7 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Registers a function to perform a subset of animations randomly (the idle ones)
         /// </summary>
-        private void RegisterIdleRandomAnimations() 
+        private void RegisterIdleRandomAnimations()
         {
             WPFAnimationsDispatcher = new DispatcherTimer();
             WPFAnimationsDispatcher.Interval = TimeSpan.FromSeconds(IdleAnimationTimeout);
@@ -202,38 +199,28 @@ namespace Recoding.ClippyVSPackage
             StartAnimation(IdleAnimations[random_int]);
         }
 
+        public void StartAnimation(ClippyAnimation animations, bool byPassCurrentAnimation = false)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(
+                async delegate {
+                    await StartAnimationAsync(animations,byPassCurrentAnimation);
+                });
+        }
+
         /// <summary>
         /// Start a specific animation
         /// </summary>
         /// <param name="animationType"></param>
-        public void StartAnimation(ClippyAnimations animationType, bool byPassCurrentAnimation = false)
+        public async System.Threading.Tasks.Task StartAnimationAsync(ClippyAnimation animationType, bool byPassCurrentAnimation = false)
         {
-            System.Windows.Application.Current.MainWindow.Dispatcher.Invoke(new Action(() =>
+            if (!IsAnimating || byPassCurrentAnimation)
             {
-                if (!IsAnimating || byPassCurrentAnimation) 
-                {
-                    IsAnimating = true;
-
-                    clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
-                    clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
-                }
-            }), DispatcherPriority.Send);
-        }
-
-        
-
-        /// <summary>
-        /// Reads the content of a stream into a string
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        private static string StreamToString(Stream stream)
-        {
-            stream.Position = 0;
-            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
+                IsAnimating = true;
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                clippedImage.BeginAnimation(Canvas.LeftProperty, Animations[animationType.ToString()].Item1);
+                clippedImage.BeginAnimation(Canvas.TopProperty, Animations[animationType.ToString()].Item2);
             }
+            
         }
     }
 }

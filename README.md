@@ -3,7 +3,7 @@ ClippyVS
 
 The legend is back, in Visual Studio!
 
-ClippyVS is a VS2015/2017 adornment [extension](https://marketplace.visualstudio.com/items?itemName=ErosFratini.ClippyVS) which reacts to some actions you're making in the IDE (opening projects, saving, building, closing files, etc...).
+ClippyVS is a V2019 adornment [extension](https://marketplace.visualstudio.com/items?itemName=ErosFratini.ClippyVS) which reacts to some actions you're making in the IDE (opening projects, saving, building, closing files, etc...).
 
 In the future it'll have to speak with the old style message bubbles **PULL REQUESTS ARE WELCOME**
 
@@ -11,6 +11,8 @@ In the future it'll have to speak with the old style message bubbles **PULL REQU
 
 Changelog:
 ----------
+0.4 - Changed to VS 2019 compatibility
+
 0.3 - Multimonitor support
 
 0.2.2  - Fixed compatibility with Visual Studio 2015

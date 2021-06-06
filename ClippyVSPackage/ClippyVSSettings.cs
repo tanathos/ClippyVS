@@ -1,6 +1,4 @@
 ﻿using Microsoft.VisualStudio.Settings;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Settings;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -14,6 +12,16 @@ namespace Recoding.ClippyVSPackage
     public class ClippyVSSettings : IClippyVSSettings
     {
         /// <summary>
+        /// If true shows clippy at the VS startup
+        /// </summary>
+        public bool ShowAtStartup { get; set; } = true;
+
+        /// <summary>
+        /// String identifier for startup boolean in settings store
+        /// </summary>
+        private const string ShowAtStartupStoreName = "ShowAtStartup";
+
+        /// <summary>
         /// The real store in which the settings will be saved
         /// </summary>
         readonly WritableSettingsStore writableSettingsStore;
@@ -21,34 +29,19 @@ namespace Recoding.ClippyVSPackage
         #region -- Constructors --
 
         /// <summary>
-        /// Default ctor
-        /// </summary>
-        public ClippyVSSettings()
-        {
-
-        }
-
-        /// <summary>
         /// Constructor for service injection
         /// </summary>
         /// <param name="vsServiceProvider"></param>
         [ImportingConstructor]
-        public ClippyVSSettings(SVsServiceProvider vsServiceProvider) : this()
+        public ClippyVSSettings(WritableSettingsStore store)
         {
-            var shellSettingsManager = new ShellSettingsManager(vsServiceProvider);
-            writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
-
+            writableSettingsStore = store;
             LoadSettings();
         }
 
         #endregion
 
-        /// <summary>
-        /// If true shows clippy at the VS startup
-        /// </summary>
-        public bool ShowAtStartup { get; set; }
-
-        /// <summary>
+         /// <summary>
         /// Performs the store of the instance of this interface to the user's settings
         /// </summary>
         public void Store()
@@ -60,7 +53,8 @@ namespace Recoding.ClippyVSPackage
                     writableSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
                 }
 
-                writableSettingsStore.SetString(Constants.SettingsCollectionPath, "ShowAtStartup", this.ShowAtStartup.ToString());
+                writableSettingsStore.SetBoolean(Constants.SettingsCollectionPath, ShowAtStartupStoreName, ShowAtStartup);
+                Debug.WriteLine("Setting stored which is {0}", ShowAtStartup);
             }
             catch (Exception ex)
             {
@@ -73,20 +67,16 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void LoadSettings()
         {
-            // Default values
-            this.ShowAtStartup = true;
-
             try
             {
                 // Tries to retrieve the configurations if previously saved
-                if (writableSettingsStore.PropertyExists(Constants.SettingsCollectionPath, "ShowAtStartup"))
+                if (writableSettingsStore.PropertyExists(Constants.SettingsCollectionPath, ShowAtStartupStoreName))
                 {
-                    bool b = this.ShowAtStartup;
-                    if (Boolean.TryParse(writableSettingsStore.GetString(Constants.SettingsCollectionPath, "ShowAtStartup"), out b))
-                        this.ShowAtStartup = b;
+                    ShowAtStartup = writableSettingsStore.GetBoolean(Constants.SettingsCollectionPath, ShowAtStartupStoreName);
+                    Debug.WriteLine("Setting loaded which is {0}", ShowAtStartup);
                 }
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 Debug.Fail(ex.Message);
             }

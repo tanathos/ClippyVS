@@ -1,0 +1,9 @@
+on:
+  push:
+    tags:
+      - "*"
+name: VSIX Publisher
+ uses:cezarypiatek/VsixPublisherAction@0.2
+ with:extension-file:src\MappingGenerator.Vsix\bin\Release\MappingGenerator.vsix
+    publish-manifest-file:src\MappingGenerator.Vsix\publishManifest.json
+    personal-access-code:${{ secrets.VS_PUBLISHER_ACCESS_TOKEN }}

@@ -1,6 +1,7 @@
 ﻿ClippyVS - Changelog
 --------------------
 
+0.4 - Ported to VS 2019 by Denis Abt, along with some code cleanup after migration
 0.3		- Multimonitor support
 0.2.2	- Fixed compatibility with Visual Studio 2015
 0.2.1	- Removed the MPF dependency
