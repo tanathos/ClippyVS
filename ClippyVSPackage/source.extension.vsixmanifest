@@ -4,12 +4,12 @@
         <Identity Id="6aae52ac-8840-421f-bb35-60b52ab431e2" Version="0.4" Language="en-US" Publisher="Eros Fratini" />
         <DisplayName>ClippyVS</DisplayName>
         <Description xml:space="preserve">Clippy is back!
-Thanks To Eros Fratini - I've migrated this to VS 2019</Description>
+Thanks To Eros Fratini for the initial work and heavy lifting - I've migrated this to be compatible with Visual Studio 2019 editions.</Description>
         <License>LICENSE.txt</License>
         <ReleaseNotes>changelog.txt</ReleaseNotes>
         <Icon>Resources\Package.ico</Icon>
         <PreviewImage>Resources\preview.png</PreviewImage>
-        <Tags>adornment, vintage, nostalgia</Tags>
+        <Tags>adornment, vintage, nostalgia, add-on, extension, office assistant</Tags>
     </Metadata>
     <Installation InstalledByMsi="false">
         <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Community" />
