@@ -1,0 +1,83 @@
+﻿<Window x:Class="Recoding.ClippyVSPackage.Balloon"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Recoding.ClippyVSPackage"
+        xmlns:w="clr-namespace:Recoding.ClippyVSPackage"
+        mc:Ignorable="d"
+        Title="Balloon" Width="230" SizeToContent="Height"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" IsTabStop="False" OverridesDefaultStyle="False" AllowsTransparency="True" Background="Transparent" Opacity="1">
+	<Window.CommandBindings>
+		<CommandBinding Command="w:BalloonCommands.DoClose" Executed="DoClose_Executed" />
+	</Window.CommandBindings>
+	<Window.Resources>
+		<Style x:Key="HyperLinkButtonStyle" TargetType="Button">
+			<EventSetter Event="Click" Handler="BalloonButton_Click"></EventSetter>
+			<Setter Property="Focusable" Value="False" />
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<TextBlock>
+                            <Image Source="Resources/blue-button.png" Height="11" Width="11" Margin="5,0,5,0" />
+                            <Hyperlink>
+
+								<!--<Hyperlink.Resources>
+									<Style TargetType="{x:Type Button}">
+										
+									</Style>
+								</Hyperlink.Resources>-->
+                                <Run Text="{Binding Path=Text}" />
+                            </Hyperlink>
+						</TextBlock>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
+	<Grid>
+		<Border CornerRadius="8,8,8,8" HorizontalAlignment="Left" Width="230" VerticalAlignment="Stretch" Margin="0,0,0,20">
+			<Border.Background>
+				<SolidColorBrush Color="#FFFFFFCD" />
+			</Border.Background>
+			<Border.BorderBrush>
+				<SolidColorBrush Color="Black" />
+			</Border.BorderBrush>
+			<Border.BorderThickness>
+				<Thickness Right="0.8" Top="0.8" Left="0.8" Bottom="0.8" />
+			</Border.BorderThickness>
+			<Grid Name="grid1" Margin="10,5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock Grid.Row="0" HorizontalAlignment="Left" Name="txtMessage" FontSize="9pt" TextWrapping="Wrap">Lorem ipsum oijsdivjbs dvsidus divusdb sdivusdv i dfiu</TextBlock>
+				<!--<StackPanel Grid.Row="1" Orientation="Vertical">
+                    <Button Style="{StaticResource ResourceKey=HyperLinkButtonStyle}">
+                        test
+                    </Button>
+                </StackPanel>-->
+
+				<ItemsControl Grid.Row="1" ItemsSource="{Binding Path=Buttons}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Vertical">
+								<Button Style="{StaticResource ResourceKey=HyperLinkButtonStyle}" Content="{Binding}"></Button>
+							</StackPanel>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Grid>
+		</Border>
+		<Path Data="M0,0 L10,20 10,0" HorizontalAlignment="Right" Margin="0,0,100,-1" Stretch="None" VerticalAlignment="Bottom">
+			<Path.Fill>
+				<SolidColorBrush Color="#FFFFFFCD" />
+			</Path.Fill>
+			<Path.Stroke>
+				<SolidColorBrush Color="Black"/>
+			</Path.Stroke>
+		</Path>
+	</Grid>
+</Window>

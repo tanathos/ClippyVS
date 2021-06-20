@@ -26,6 +26,8 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private Clippy _clippy { get; set; }
 
+        private Balloon _balloon = null;
+
         /// <summary>
         /// This VSIX package
         /// </summary>
@@ -161,6 +163,11 @@ namespace Recoding.ClippyVSPackage
             _clippy = new Clippy((Canvas)FindName("ClippyCanvas"));
             _clippy.StartAnimation(ClippyAnimation.Idle1_1);
 
+            // Initialize balloon window
+            if (_balloon == null)
+            {
+                _balloon = new Balloon();
+            }
         }
 
         private void RegisterToDTEEvents()
@@ -350,6 +357,9 @@ namespace Recoding.ClippyVSPackage
             if (this.IsVisible)
             {
                 _clippy.StartAnimation(ClippyAnimation.Idle1_1, true);
+
+                _balloon.Owner = this;
+                _balloon.Topmost = false;
             }
         }
 
@@ -357,6 +367,9 @@ namespace Recoding.ClippyVSPackage
         {
             //System.Diagnostics.Debug.WriteLine(String.Format("Parent {0} {1}", this.Owner.Top, this.Owner.Left));
             //System.Diagnostics.Debug.WriteLine(String.Format("Child {0} {1}", this.Top, this.Left));
+
+            if (_balloon.IsVisible)
+                _balloon.HideBalloon();
 
             double relativeTop = this.Top;
             double relativeLeft = this.Left;
@@ -376,6 +389,26 @@ namespace Recoding.ClippyVSPackage
             {
 
             }
+        }
+
+        /// <summary>
+        /// TEMP: to test the balloons
+        /// TODO: remove
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void SpriteContainer_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            //if (balloon == null)
+            //    balloon = new Balloon();
+
+            //balloon.Owner = this;
+            //balloon.Topmost = false;
+
+            if (!_balloon.IsVisible)
+                _balloon.ShowBalloon("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor", this, new BalloonButton("Close", BalloonCommands.DoClose));
+            else
+                _balloon.HideBalloon();
         }
 
         #endregion

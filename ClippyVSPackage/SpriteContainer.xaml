@@ -9,7 +9,8 @@
 		ResizeMode="NoResize"
 		MouseDown="Window_MouseDown" 
 		Closing="ClippySpriteContainer_Closing" 
-		IsVisibleChanged="ClippySpriteContainer_IsVisibleChanged">
+		IsVisibleChanged="ClippySpriteContainer_IsVisibleChanged"
+		MouseDoubleClick="SpriteContainer_MouseDoubleClick">
     <Window.Resources>
         <ContextMenu x:Key="cmButton">
 			<MenuItem x:Name="cmdRandom" Header="Surprise me" Click="cmdRandom_Click" />

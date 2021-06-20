@@ -77,6 +77,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssistantBase.cs" />
+    <Compile Include="Balloon.xaml.cs">
+      <DependentUpon>Balloon.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BalloonButton.cs" />
+    <Compile Include="BalloonCommands.cs" />
     <Compile Include="Clippy.cs" />
     <Compile Include="ClippyVSSettings.cs" />
     <Compile Include="Command1.cs" />
@@ -172,6 +177,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Balloon.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SpriteContainer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
