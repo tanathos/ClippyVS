@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using Community.VisualStudio.Toolkit;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
@@ -40,9 +41,9 @@ namespace Recoding.ClippyVSPackage
 
         private double RelativeTop { get; set; }
 
-        private Events events;
-        private DocumentEvents docEvents;
-        private BuildEvents buildEvents;
+        // private Community.VisualStudio.Toolkit.Events events;
+        private Community.VisualStudio.Toolkit.DocumentEvents docEvents;
+        private Community.VisualStudio.Toolkit.BuildEvents buildEvents;
         private ProjectItemsEvents projectItemsEvents;
         private ProjectItemsEvents csharpProjectItemsEvents;
 
@@ -71,12 +72,18 @@ namespace Recoding.ClippyVSPackage
                 .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
             //if (activityLog == null) return;
             //System.Windows.Forms.MessageBox.Show("Found the activity log service.");
+            
             ThreadHelper.ThrowIfNotOnUIThread();
+            
             DTE dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
-            events = dte.Events;
-            docEvents = dte.Events.DocumentEvents;
-            buildEvents = dte.Events.BuildEvents;
+            //events = dte.Events;
+            //docEvents = dte.Events.DocumentEvents;
+            //buildEvents = dte.Events.BuildEvents;
 
+            // events = Community.VisualStudio.Toolkit.VS.Events;
+            docEvents = Community.VisualStudio.Toolkit.VS.Events.DocumentEvents;
+            buildEvents = Community.VisualStudio.Toolkit.VS.Events.BuildEvents;
+            
             RegisterToDTEEvents();
 
             Owner.LocationChanged += Owner_LocationChanged;
@@ -165,34 +172,55 @@ namespace Recoding.ClippyVSPackage
 
         private void RegisterToDTEEvents()
         {
-            docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
-            docEvents.DocumentSaved += DocumentEvents_DocumentSaved;
-            docEvents.DocumentClosing += DocEvents_DocumentClosing;
+            docEvents.Opened += DocumentEvents_DocumentOpening;
+            docEvents.Saved += DocumentEvents_DocumentSaved;
+            docEvents.Closed += DocEvents_DocumentClosing;
 
-            buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
-            buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
+            buildEvents.ProjectBuildStarted += BuildEvents_OnProjectBuildStarted;
+            buildEvents.SolutionBuildStarted += BuildEvents_SolutionBuildStarted;
+            buildEvents.ProjectBuildDone += BuildEvents_OnProjectBuildDone;
+            buildEvents.SolutionBuildDone += BuildEvents_OnSolutionBuildDone;
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
             DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
 
-
             Events2 events2 = dte.Events as Events2;
-            if (events2 != null)
-            {
-                this.projectItemsEvents = events2.ProjectItemsEvents;
-                this.projectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
-                this.projectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
-                this.projectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
-            }
+            //if (events2 != null)
+            //{
+            //    this.projectItemsEvents = events2.ProjectItemsEvents;
+            //    this.projectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
+            //    this.projectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
+            //    this.projectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
+            //}
 
-            this.csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as EnvDTE.ProjectItemsEvents;
-            if (this.csharpProjectItemsEvents != null)
-            {
-                this.csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
-                this.csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
-                this.csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
-            }
+            //this.csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as EnvDTE.ProjectItemsEvents;
+            //if (this.csharpProjectItemsEvents != null)
+            //{
+            //    this.csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
+            //    this.csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
+            //    this.csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
+            //}
+        }
+
+        private void BuildEvents_OnSolutionBuildDone(bool obj)
+        {
+            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+        }
+
+        private void BuildEvents_OnProjectBuildDone(ProjectBuildDoneEventArgs obj)
+        {
+            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+        }
+
+        private void BuildEvents_SolutionBuildStarted(object sender, EventArgs e)
+        {
+            _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
+        }
+
+        private void BuildEvents_OnProjectBuildStarted(Community.VisualStudio.Toolkit.Project obj)
+        {
+            _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
         }
 
         #region -- IDE Event Handlers --
@@ -217,27 +245,27 @@ namespace Recoding.ClippyVSPackage
             _clippy.StartAnimation(ClippyAnimation.Searching, true);
         }
 
-        private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
-        {
-            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
-        }
+        //private void BuildEvents_OnBuildDone(string action/*EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action*/)
+        //{
+        //    _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+        //}
 
-        private void DocEvents_DocumentClosing(EnvDTE.Document Document)
+        private void DocEvents_DocumentClosing(string action/*EnvDTE.Document Document*/)
         {
             _clippy.StartAnimation(ClippyAnimation.GestureDown, true);
         }
 
-        private void BuildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
-        {
-            _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
-        }
+        //private void BuildEvents_OnBuildBegin(string action /*EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action*/)
+        //{
+        //    _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
+        //}
 
-        private void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
+        private void DocumentEvents_DocumentSaved(string action /*EnvDTE.Document Document*/)
         {
             _clippy.StartAnimation(ClippyAnimation.Save, true);
         }
 
-        private void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
+        private void DocumentEvents_DocumentOpening(string action/*, string DocumentPath, bool ReadOnly*/)
         {
             _clippy.StartAnimation(ClippyAnimation.LookUp);
         }
