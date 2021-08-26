@@ -69,6 +69,10 @@ namespace Recoding.ClippyVSPackage
                     command.Execute(null, this);
                 }
             }
+
+            var action = ((Recoding.ClippyVSPackage.BalloonButton)(sender as Button).DataContext).Action;
+            if (action != null)
+                action();
         }
 
         private void DoClose_Executed(object sender, ExecutedRoutedEventArgs e)

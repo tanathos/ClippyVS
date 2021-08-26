@@ -9,6 +9,12 @@ namespace Recoding.ClippyVSPackage
 {
     public class BalloonButton
     {
+        public BalloonButton(string text, Action action)
+        {
+            this.Text = text;
+            this.Action = action;
+        }
+
         public BalloonButton(string text, RoutedCommand e)
         {
             this.Text = text;
@@ -18,5 +24,7 @@ namespace Recoding.ClippyVSPackage
         public string Text { get; set; }
 
         public RoutedCommand Command { get; set; }
+
+        public Action Action { get; set; }
     }
 }

@@ -247,6 +247,10 @@ namespace Recoding.ClippyVSPackage
         private void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
         {
             _clippy.StartAnimation(ClippyAnimation.LookUp);
+            
+            _balloon.ShowBalloon("Ohhhhhh... do you want to write a letter?", this, new BalloonButton("Close", () => {
+                _balloon.ShowBalloon("Nope", this);
+            }));
         }
 
         #endregion
