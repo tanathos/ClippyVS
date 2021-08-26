@@ -181,11 +181,14 @@ namespace Recoding.ClippyVSPackage
             buildEvents.ProjectBuildDone += BuildEvents_OnProjectBuildDone;
             buildEvents.SolutionBuildDone += BuildEvents_OnSolutionBuildDone;
 
-            ThreadHelper.ThrowIfNotOnUIThread();
 
-            DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
+            // TODO: All the following events are not supported by the current implementation of Community.VisualStudio.Toolkit
 
-            Events2 events2 = dte.Events as Events2;
+            //ThreadHelper.ThrowIfNotOnUIThread();
+
+            //DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
+
+            //Events2 events2 = dte.Events as Events2;
             //if (events2 != null)
             //{
             //    this.projectItemsEvents = events2.ProjectItemsEvents;
