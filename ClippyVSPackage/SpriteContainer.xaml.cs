@@ -48,6 +48,8 @@ namespace Recoding.ClippyVSPackage
         private ProjectItemsEvents projectItemsEvents;
         private ProjectItemsEvents csharpProjectItemsEvents;
 
+        private Sentences _sentences;
+
         /// <summary>
         /// Default ctor
         /// </summary>
@@ -168,6 +170,8 @@ namespace Recoding.ClippyVSPackage
             {
                 _balloon = new Balloon();
             }
+
+            _sentences = new Sentences(_clippy, _balloon, this);
         }
 
         private void RegisterToDTEEvents()
@@ -244,13 +248,11 @@ namespace Recoding.ClippyVSPackage
             _clippy.StartAnimation(ClippyAnimation.Save, true);
         }
 
-        private void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
+        private void DocumentEvents_DocumentOpening(string documentPath, bool ReadOnly)
         {
             _clippy.StartAnimation(ClippyAnimation.LookUp);
-            
-            _balloon.ShowBalloon("Ohhhhhh... do you want to write a letter?", this, new BalloonButton("Close", () => {
-                _balloon.ShowBalloon("Nope", this);
-            }));
+
+            _sentences.OnFileOpened(documentPath);
         }
 
         #endregion

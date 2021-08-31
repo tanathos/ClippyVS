@@ -110,6 +110,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources1.resx</DependentUpon>
     </Compile>
+    <Compile Include="Sentences.cs" />
     <Compile Include="SpriteContainer.xaml.cs">
       <DependentUpon>SpriteContainer.xaml</DependentUpon>
     </Compile>
