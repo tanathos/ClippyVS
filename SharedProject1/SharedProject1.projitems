@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>97f858e7-1ae0-4257-9be3-641512c0a08b</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SharedProject1</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AssistantBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Clippy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ClippyVSPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ClippyVSSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Command1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\Animation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippyAnimation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\ColumnRow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\Frame.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IClippyVSSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)PkgCmdID.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Resources1.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteContainer.xaml.cs">
+      <DependentUpon>SpriteContainer.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)changelog.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\agent.js" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\sounds-mp3.js" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\sounds-ogg.js" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\Package.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\preview.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\animations.json" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\clippy.png" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Command1.png" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\map.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)app.config" />
+    <None Include="$(MSBuildThisFileDirectory)ClippyVSPackage.ruleset" />
+    <Content Include="$(MSBuildThisFileDirectory)ClippyVSPackage.vsct" />
+    <Resource Include="$(MSBuildThisFileDirectory)ClippyVSPackage.vsct" />
+    <None Include="$(MSBuildThisFileDirectory)Key.snk" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\Images.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources1.resx">
+      <LastGenOutput>Resources1.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)VSPackage.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)SpriteContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>
