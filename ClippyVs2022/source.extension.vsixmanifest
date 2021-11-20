@@ -4,6 +4,7 @@
     <Identity Id="ClippyVs2022.647af97f-6dbf-45b9-bea9-d8110c081504" Version="1.0" Language="en-US" Publisher="Denis Abt" />
     <DisplayName>ClippyVs2022</DisplayName>
     <Description>Empty VSIX Project.</Description>
+    <License>LICENSE.txt</License>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
