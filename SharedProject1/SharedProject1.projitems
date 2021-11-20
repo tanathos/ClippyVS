@@ -46,6 +46,11 @@
     <Content Include="$(MSBuildThisFileDirectory)LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\animations.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\clippy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\Command1.png" />
     <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\agent.js" />
     <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\sounds-mp3.js" />
     <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\sounds-ogg.js" />
@@ -58,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="$(MSBuildThisFileDirectory)Resources\animations.json" />
-    <Resource Include="$(MSBuildThisFileDirectory)Resources\clippy.png" />
     <Resource Include="$(MSBuildThisFileDirectory)Resources\Command1.png" />
     <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\map.png" />
   </ItemGroup>
