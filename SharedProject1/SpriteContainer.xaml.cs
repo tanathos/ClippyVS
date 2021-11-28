@@ -1,5 +1,4 @@
 ﻿using EnvDTE;
-using EnvDTE80;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -7,6 +6,7 @@ using Microsoft.VisualStudio.Shell.Settings;
 using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
@@ -16,11 +16,15 @@ using System.Windows.Threading;
 
 namespace Recoding.ClippyVSPackage
 {
+
     /// <summary>
     /// Interaction logic for SpriteContainer.xaml
     /// </summary>
     public partial class SpriteContainer : System.Windows.Window
     {
+        [Import]
+        internal SVsServiceProvider ServiceProvider = null;
+
         /// <summary>
         /// The instance of Clippy, our hero
         /// </summary>
@@ -54,8 +58,11 @@ namespace Recoding.ClippyVSPackage
         {
             _package = package;
 
+            // Async Stuff
             ThreadHelper.ThrowIfNotOnUIThread();
-            var settingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+            DTE dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
+
+            var settingsManager = new ShellSettingsManager(_package);
             _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
             InitializeComponent();
@@ -69,10 +76,9 @@ namespace Recoding.ClippyVSPackage
 
             IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
                 .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
-            //if (activityLog == null) return;
-            //System.Windows.Forms.MessageBox.Show("Found the activity log service.");
+
             ThreadHelper.ThrowIfNotOnUIThread();
-            DTE dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
+
             events = dte.Events;
             docEvents = dte.Events.DocumentEvents;
             buildEvents = dte.Events.BuildEvents;
@@ -89,6 +95,34 @@ namespace Recoding.ClippyVSPackage
 
             #region -- Restore Sprite postion --
 
+            RestoreWindowPosition();
+
+            #endregion
+
+            var values = Enum.GetValues(typeof(ClippyAnimation));
+
+            //// TEMP: create a voice for each animation in the context menu
+            //var pMenu = (ContextMenu)this.Resources["cmButton"];
+
+            //foreach (ClippySingleAnimation val in values)
+            //{
+            //    var menuItem = new MenuItem()
+            //    {
+            //        Header = val.ToString(),
+            //        Name = "cmd" + val.ToString()
+            //    };
+            //    menuItem.Click += cmdTestAnimation_Click;
+            //    pMenu.Items.Add(menuItem);
+            //}
+            //// /TEMP
+
+            _clippy = new Clippy((Canvas)FindName("ClippyCanvas"));
+            _clippy.StartAnimation(ClippyAnimation.Idle1_1);
+
+        }
+
+        private void RestoreWindowPosition()
+        {
             double? storedRelativeTop = null;
             double? storedRelativeLeft = null;
 
@@ -138,29 +172,6 @@ namespace Recoding.ClippyVSPackage
 
             this.Top = ownerTop + storedRelativeTop.Value;
             this.Left = ownerLeft + storedRelativeLeft.Value;
-
-            #endregion
-
-            var values = Enum.GetValues(typeof(ClippyAnimation));
-
-            //// TEMP: create a voice for each animation in the context menu
-            //var pMenu = (ContextMenu)this.Resources["cmButton"];
-
-            //foreach (ClippySingleAnimation val in values)
-            //{
-            //    var menuItem = new MenuItem()
-            //    {
-            //        Header = val.ToString(),
-            //        Name = "cmd" + val.ToString()
-            //    };
-            //    menuItem.Click += cmdTestAnimation_Click;
-            //    pMenu.Items.Add(menuItem);
-            //}
-            //// /TEMP
-
-            _clippy = new Clippy((Canvas)FindName("ClippyCanvas"));
-            _clippy.StartAnimation(ClippyAnimation.Idle1_1);
-
         }
 
         private void RegisterToDTEEvents()
@@ -177,16 +188,16 @@ namespace Recoding.ClippyVSPackage
             DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
 
 
-            Events2 events2 = dte.Events as Events2;
+            Events events2 = dte.Events;
             if (events2 != null)
             {
-                this.projectItemsEvents = events2.ProjectItemsEvents;
+                this.projectItemsEvents = events2.SolutionItemsEvents;
                 this.projectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
                 this.projectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
                 this.projectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
             }
 
-            this.csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as EnvDTE.ProjectItemsEvents;
+            this.csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as ProjectItemsEvents;
             if (this.csharpProjectItemsEvents != null)
             {
                 this.csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
@@ -197,17 +208,17 @@ namespace Recoding.ClippyVSPackage
 
         #region -- IDE Event Handlers --
 
-        private void ProjectItemsEvents_ItemRenamed(EnvDTE.ProjectItem ProjectItem, string OldName)
+        private void ProjectItemsEvents_ItemRenamed(ProjectItem ProjectItem, string OldName)
         {
             _clippy.StartAnimation(ClippyAnimation.Writing, true);
         }
 
-        private void ProjectItemsEvents_ItemRemoved(EnvDTE.ProjectItem ProjectItem)
+        private void ProjectItemsEvents_ItemRemoved(ProjectItem ProjectItem)
         {
             _clippy.StartAnimation(ClippyAnimation.EmptyTrash, true);
         }
 
-        private void ProjectItemsEvents_ItemAdded(EnvDTE.ProjectItem ProjectItem)
+        private void ProjectItemsEvents_ItemAdded(ProjectItem ProjectItem)
         {
             _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
         }

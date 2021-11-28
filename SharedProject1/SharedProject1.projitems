@@ -46,33 +46,11 @@
     <Content Include="$(MSBuildThisFileDirectory)LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Resources\animations.json" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\clippy.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <Content Include="$(MSBuildThisFileDirectory)Resources\Command1.png" />
-    <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\agent.js" />
-    <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\sounds-mp3.js" />
-    <Content Include="$(MSBuildThisFileDirectory)Resources\Merlin\sounds-ogg.js" />
-    <Content Include="$(MSBuildThisFileDirectory)Resources\Package.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Resources\preview.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="$(MSBuildThisFileDirectory)Resources\animations.json" />
-    <Resource Include="$(MSBuildThisFileDirectory)Resources\Command1.png" />
-    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\map.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)app.config" />
     <None Include="$(MSBuildThisFileDirectory)ClippyVSPackage.ruleset" />
-    <Content Include="$(MSBuildThisFileDirectory)ClippyVSPackage.vsct" />
-    <Resource Include="$(MSBuildThisFileDirectory)ClippyVSPackage.vsct" />
     <None Include="$(MSBuildThisFileDirectory)Key.snk" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
