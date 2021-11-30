@@ -93,7 +93,13 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         public Clippy(Canvas canvas)
         {
-            this.Sprite = new BitmapImage(new Uri(spriteResourceUri, UriKind.RelativeOrAbsolute));
+            var spResUri = spriteResourceUri;
+#if Dev19
+            spResUri = spriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
+#endif
+#if Dev22
+#endif
+            this.Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
 
             clippedImage = new Image
             {
