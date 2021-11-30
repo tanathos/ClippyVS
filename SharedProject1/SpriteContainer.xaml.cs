@@ -1,4 +1,5 @@
 ﻿using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -56,11 +57,12 @@ namespace Recoding.ClippyVSPackage
         /// <param name="package"></param>
         public SpriteContainer(AsyncPackage package)
         {
+            Debug.WriteLine("Entering Sprite Container Constructor");
             _package = package;
 
             // Async Stuff
             ThreadHelper.ThrowIfNotOnUIThread();
-            DTE dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
+            var dte = (EnvDTE80.DTE2)package.GetServiceAsync(typeof(EnvDTE.DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
 
             var settingsManager = new ShellSettingsManager(_package);
             _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
@@ -83,7 +85,7 @@ namespace Recoding.ClippyVSPackage
             docEvents = dte.Events.DocumentEvents;
             buildEvents = dte.Events.BuildEvents;
 
-            RegisterToDTEEvents();
+            RegisterToDTEEvents(dte);
 
             Owner.LocationChanged += Owner_LocationChanged;
             Owner.StateChanged += Owner_StateOrSizeChanged;
@@ -174,7 +176,7 @@ namespace Recoding.ClippyVSPackage
             this.Left = ownerLeft + storedRelativeLeft.Value;
         }
 
-        private void RegisterToDTEEvents()
+        private void RegisterToDTEEvents(DTE2 dte)
         {
             docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
             docEvents.DocumentSaved += DocumentEvents_DocumentSaved;
@@ -184,9 +186,6 @@ namespace Recoding.ClippyVSPackage
             buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
 
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            DTE dte = _package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult() as EnvDTE.DTE;
-
 
             Events events2 = dte.Events;
             if (events2 != null)
@@ -206,7 +205,7 @@ namespace Recoding.ClippyVSPackage
             }
         }
 
-        #region -- IDE Event Handlers --
+#region -- IDE Event Handlers --
 
         private void ProjectItemsEvents_ItemRenamed(ProjectItem ProjectItem, string OldName)
         {
@@ -253,9 +252,9 @@ namespace Recoding.ClippyVSPackage
             _clippy.StartAnimation(ClippyAnimation.LookUp);
         }
 
-        #endregion
+#endregion
 
-        #region -- Owner Event Handlers --
+#region -- Owner Event Handlers --
 
         private void Owner_StateOrSizeChanged(object sender, EventArgs e)
         {
@@ -287,9 +286,9 @@ namespace Recoding.ClippyVSPackage
             this.LocationChanged += SpriteContainer_LocationChanged;
         }
 
-        #endregion
+#endregion
 
-        #region -- ClippyWindow Event Handlers --
+#region -- ClippyWindow Event Handlers --
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -389,7 +388,7 @@ namespace Recoding.ClippyVSPackage
             }
         }
 
-        #endregion
+#endregion
 
         private void recalculateSpritePosition(out double relativeTop, out double relativeLeft, bool getDefaultPositioning = false)
         {

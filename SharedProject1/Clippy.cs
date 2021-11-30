@@ -22,12 +22,14 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The URI for the sprite with all the animation stages for Clippy
         /// </summary>
-        private static string spriteResourceUri = "pack://application:,,,/ClippyVSPackage;component/clippy.png";
+        //private static string spriteResourceUri = "pack://application:,,,/ClippyVSPackage;component/clippy.png";
+        private static string spriteResourceUri = "pack://application:,,,/ClippyVs2022;component/clippy.png";
 
         /// <summary>
         /// The URI for the animations json definition
         /// </summary>
-        private static string animationsResourceUri = "pack://application:,,,/ClippyVSPackage;component/animations.json";
+        //private static string animationsResourceUri = "pack://application:,,,/ClippyVSPackage;component/animations.json";
+        private static string animationsResourceUri = "pack://application:,,,/ClippyVs2022;component/animations.json";
 
         /// <summary>
         /// The sprite with all the animation stages for Clippy
