@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Forms;
 using Task = System.Threading.Tasks.Task;
 
@@ -57,7 +58,7 @@ namespace Recoding.ClippyVSPackage
             string title = "Command1";
 
             // Show a message box to prove we were here
-            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            System.Windows.Forms.MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

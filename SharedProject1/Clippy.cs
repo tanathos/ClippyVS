@@ -22,12 +22,14 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The URI for the sprite with all the animation stages for Clippy
         /// </summary>
-        private static string spriteResourceUri = "pack://application:,,,/ClippyVSPackage;component/resources/clippy.png";
+        //private static string spriteResourceUri = "pack://application:,,,/ClippyVSPackage;component/clippy.png";
+        private static string spriteResourceUri = "pack://application:,,,/ClippyVs2022;component/clippy.png";
 
         /// <summary>
         /// The URI for the animations json definition
         /// </summary>
-        private static string animationsResourceUri = "pack://application:,,,/ClippyVSPackage;component/resources/animations.json";
+        //private static string animationsResourceUri = "pack://application:,,,/ClippyVSPackage;component/animations.json";
+        private static string animationsResourceUri = "pack://application:,,,/ClippyVs2022;component/animations.json";
 
         /// <summary>
         /// The sprite with all the animation stages for Clippy
@@ -91,7 +93,13 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         public Clippy(Canvas canvas)
         {
-            this.Sprite = new BitmapImage(new Uri(spriteResourceUri, UriKind.RelativeOrAbsolute));
+            var spResUri = spriteResourceUri;
+#if Dev19
+            spResUri = spriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
+#endif
+#if Dev22
+#endif
+            this.Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
 
             clippedImage = new Image
             {

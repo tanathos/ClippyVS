@@ -1,16 +1,16 @@
-﻿using Microsoft.VisualStudio;
+﻿using System;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Settings;
-using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
-using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio;
+using System.Runtime.InteropServices;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -25,10 +25,12 @@ namespace Recoding.ClippyVSPackage
 
     [Guid(Constants.guidClippyVSPkgString)]
     [ProvideOptionPageAttribute(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
-    public sealed class ClippyVisualStudioPackage : AsyncPackage
+
+    public sealed class ClippyVisualStudioPackage : Microsoft.VisualStudio.Shell.AsyncPackage
     {
         /// <summary>
         /// Default ctor
+        /// https://docs.microsoft.com/en-us/visualstudio/extensibility/internals/designing-xml-command-table-dot-vsct-files?view=vs-2022
         /// </summary>
         public ClippyVisualStudioPackage()
         {
@@ -41,7 +43,7 @@ namespace Recoding.ClippyVSPackage
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             try
             {
