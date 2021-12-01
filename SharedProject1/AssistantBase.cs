@@ -23,11 +23,13 @@ namespace Recoding.ClippyVSPackage
         /// <returns></returns>
         public static string StreamToString(Stream stream)
         {
+            string streamString = string.Empty;
             stream.Position = 0;
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
-                return reader.ReadToEnd();
+                streamString = reader.ReadToEnd();
             }
+            return streamString;
         }
     }
 }

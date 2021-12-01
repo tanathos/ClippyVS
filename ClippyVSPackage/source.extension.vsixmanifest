@@ -1,29 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-  <Metadata>
-    <Identity Id="6aae52ac-8840-421f-bb35-60b52ab431e2" Version="0.4" Language="en-US" Publisher="Eros Fratini" />
-    <DisplayName>ClippyVS</DisplayName>
-    <Description xml:space="preserve">Empty</Description>
-    <!-- Clippy is back!
-Thanks To Eros Fratini for the initial work and heavy lifting - I've migrated this to be compatible with Visual Studio 2019 editions.-->
-    <!-- <License>LICENSE.txt</License>
-    <ReleaseNotes>changelog.txt</ReleaseNotes>
-    <Icon>Resources\Package.ico</Icon>
-    <PreviewImage>Resources\preview.png</PreviewImage>
-    <Tags>adornment, vintage, nostalgia, add-on, extension, office assistant</Tags> -->
-  </Metadata>
-  <Installation>
-    <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Community" />
-    <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
-    <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
-  </Installation>
-  <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-  </Dependencies>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-  </Assets>
-  <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
-  </Prerequisites>
+    <Metadata>
+        <Identity Id="6aae52ac-8840-421f-bb35-60b52ab431e2" Version="0.5" Language="en-US" Publisher="Eros Fratini" />
+        <DisplayName>ClippyVS</DisplayName>
+        <Description xml:space="preserve">Clippy is back!
+Thanks To Eros Fratini for the initial work and heavy lifting - I've migrated this to be compatible with Visual Studio 2019 &amp; 2022 editions.</Description>
+        <License>LICENSE.txt</License>
+        <ReleaseNotes>changelog.txt</ReleaseNotes>
+        <Icon>clippy.png</Icon>
+        <PreviewImage>clippy.png</PreviewImage>
+        <Tags>adornment, vintage, nostalgia, add-on, extension, office assistant</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Community" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
 </PackageManifest>
