@@ -128,7 +128,13 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void RegisterAnimations()
         {
-            Uri uri = new Uri(animationsResourceUri, UriKind.RelativeOrAbsolute);
+            var spResUri = animationsResourceUri;
+            
+#if Dev19
+            spResUri = spResUri.Replace("ClippyVs2022", "ClippyVSPackage");
+#endif
+            Uri uri = new Uri(spResUri, UriKind.RelativeOrAbsolute);
+
             StreamResourceInfo info = Application.GetResourceStream(uri);
 
             List<ClippySingleAnimation> storedAnimations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippySingleAnimation>>(StreamToString(info.Stream));
