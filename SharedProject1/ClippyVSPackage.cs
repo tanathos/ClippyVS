@@ -5,12 +5,12 @@ using Microsoft.VisualStudio.Shell.Settings;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.VisualStudio;
 using System.Runtime.InteropServices;
+using System.Linq;
+using SharedProject1;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -23,11 +23,15 @@ namespace Recoding.ClippyVSPackage
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasMultipleProjects_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionHasSingleProject_string, PackageAutoLoadFlags.BackgroundLoad)]
 
-    [Guid(Constants.guidClippyVSPkgString)]
-    [ProvideOptionPageAttribute(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
+    [Guid(Constants.GuidClippyVsPkgString)]
+    [ProvideOptionPage(typeof(OptionsPage), "Clippy VS", "General", 0, 0, supportsAutomation: true)]
 
-    public sealed class ClippyVisualStudioPackage : Microsoft.VisualStudio.Shell.AsyncPackage
+    public sealed class ClippyVisualStudioPackage : AsyncPackage
     {
+        public SpriteContainer SpriteContainer { get; set; }
+
+        private IClippyVsSettings Settings { get; set; }
+
         /// <summary>
         /// Default ctor
         /// https://docs.microsoft.com/en-us/visualstudio/extensibility/internals/designing-xml-command-table-dot-vsct-files?view=vs-2022
@@ -48,23 +52,31 @@ namespace Recoding.ClippyVSPackage
             try
             {
                 Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
-                base.Initialize();
-
-                OleMenuCommandService mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+                Initialize();
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(this.DisposalToken);
-                Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
+                if (Application.Current.MainWindow != null)
+                    Application.Current.MainWindow.ContentRendered += MainWindow_ContentRendered;
+
+                var shellSettingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
+                var writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+
+                Settings = new ClippyVsSettings(writableSettingsStore);
 
                 // Add our command handlers for menu (commands must exist in the .vsct file)
-
-                if (null != mcs)
+                if (await GetServiceAsync(typeof(IMenuCommandService)) is OleMenuCommandService mcs)
                 {
-                    // Create the command for the menu item.
-                    CommandID menuCommandID = new CommandID(Constants.guidClippyVSCmdSet, (int)PkgCmdIDList.cmdShowClippy);
-                    MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
+                    // Create the commands for the menu item.
+                    var menuCommandId = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.CmdShowClippy);
+                    var menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
                     mcs.AddCommand(menuItem);
+
+                    var menuCommand2Id = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.CmdShowMerlin);
+                    var menuItem2 = new MenuCommand(MenuItemCallback, menuCommand2Id);
+                    mcs.AddCommand(menuItem2);
                 }
-                
+                await Command1.InitializeAsync(this).ConfigureAwait(true);
+                await Command2.InitializeAsync(this);
             }
             catch (Exception e)
             {
@@ -72,19 +84,45 @@ namespace Recoding.ClippyVSPackage
             }
         }
 
-        async void MainWindow_ContentRendered(object sender, EventArgs e)
+        internal void ReviveMerlinCommand()
+        {
+            var visibleAssistants = Application.Current.Windows.OfType<SpriteContainer>();
+            if (!visibleAssistants.Any())
+            {
+                SpriteContainer = new SpriteContainer(this, true);
+            }
+
+            Settings.SelectedAssistantName = "Merlin";
+            Settings.SaveSettings();
+            
+            Application.Current.Windows.OfType<SpriteContainer>().First().Show();
+            SpriteContainer.ReviveMerlin();
+        }
+
+
+        internal void ReviveClippyCommand()
+        {
+            var visibleAssistants = Application.Current.Windows.OfType<SpriteContainer>();
+            if (!visibleAssistants.Any())
+            {
+                SpriteContainer = new SpriteContainer(this, true);
+            }
+
+            Settings.SelectedAssistantName = "Clippy";
+            Settings.SaveSettings();
+
+            Application.Current.Windows.OfType<SpriteContainer>().First().Show();
+            SpriteContainer.ReviveClippy();
+        }
+
+        private async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
             var token = new CancellationToken();
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-            var shellSettingsManager = new ShellSettingsManager(ServiceProvider.GlobalProvider);
-            var writableSettingsStore = shellSettingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
+            SpriteContainer = Settings.SelectedAssistantName.Contains("merlin") ? new SpriteContainer(this, true) : new SpriteContainer(this);
 
-            IClippyVSSettings settings = new ClippyVSSettings(writableSettingsStore);
-            SpriteContainer container = new SpriteContainer(this);
-
-            if (settings.ShowAtStartup)
-                container.Show();
-
+            if (Settings.ShowAtStartup)
+                SpriteContainer.Show();
         }
 
         #endregion
@@ -96,13 +134,9 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void MenuItemCallback(object sender, EventArgs e)
         {
-            if (!Application.Current.Windows.OfType<SpriteContainer>().Any())
-            {
-                SpriteContainer container = new SpriteContainer(this);
-            }
 
-            Application.Current.Windows.OfType<SpriteContainer>().First().Show();
-
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ((ClippyVisualStudioPackage)this).ReviveClippyCommand();
         }
     }
 }

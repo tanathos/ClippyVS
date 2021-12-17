@@ -1,10 +1,28 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Recoding.ClippyVSPackage
 {
-    public class AssistantBase
+    public class AssistantBase : IDisposable
     {
+        /// <summary>
+        /// The time dispatcher to perform the animations in a random way
+        /// </summary>
+        protected DispatcherTimer WpfAnimationsDispatcher;
+
+        /// <summary>
+        /// The sprite with all the animation stages for Clippy
+        /// </summary>
+        protected BitmapSource Sprite;
+        
+        /// <summary>
+        /// The image that holds the sprite
+        /// </summary>
+        protected Image ClippedImage;
 
         /// <summary>
         /// Seconds between a random idle animation and another
@@ -16,6 +34,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         public bool IsAnimating { get; set; }
 
+
         /// <summary>
         /// Reads the content of a stream into a string
         /// </summary>
@@ -23,13 +42,19 @@ namespace Recoding.ClippyVSPackage
         /// <returns></returns>
         public static string StreamToString(Stream stream)
         {
-            string streamString = string.Empty;
+            string streamString;
             stream.Position = 0;
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
                 streamString = reader.ReadToEnd();
             }
             return streamString;
+        }
+
+        public void Dispose()
+        { 
+            if (WpfAnimationsDispatcher != null)    
+                WpfAnimationsDispatcher.Stop();
         }
     }
 }

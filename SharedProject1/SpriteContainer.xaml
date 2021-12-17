@@ -11,14 +11,14 @@
 		Closing="ClippySpriteContainer_Closing" 
 		IsVisibleChanged="ClippySpriteContainer_IsVisibleChanged">
     <Window.Resources>
-        <ContextMenu x:Key="cmButton">
+        <ContextMenu x:Key="CmButton">
             <MenuItem x:Name="cmdRandom" Header="Surprise me" Click="cmdRandom_Click" />
             <Separator />
             <MenuItem x:Name="cmdClose" Header="Please, leave me alone" Click="cmdClose_Click"  />
             <Separator />
         </ContextMenu>
     </Window.Resources>
-    <Grid Opacity="1" Width="124" MouseRightButtonUp="Grid_MouseRightButtonUp">
+    <Grid Opacity="1" Width="124" MouseRightButtonUp="Grid_MouseRightButtonUp" x:Name="ClippyGrid">
         <Canvas x:Name="ClippyCanvas" HorizontalAlignment="Left" Height="93" VerticalAlignment="Top" Width="124" ClipToBounds="True"/>
     </Grid>
 </Window>

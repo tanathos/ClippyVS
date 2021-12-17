@@ -9,41 +9,42 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Linq;
+using Recoding.ClippyVSPackage;
 using System.Diagnostics;
 
-namespace Recoding.ClippyVSPackage
+namespace SharedProject1.AssistImpl
 {
     /// <summary>
     /// The core object that represents Clippy and its animations
     /// </summary>
-    public class Clippy : AssistantBase
+    public class Merlin : AssistantBase
     {
         /// <summary>
         /// The URI for the sprite with all the animation stages for Clippy
         /// </summary>
         //private static string spriteResourceUri = "pack://application:,,,/ClippyVSPackage;component/clippy.png";
-        private static readonly string SpriteResourceUri = "pack://application:,,,/ClippyVs2022;component/clippy.png";
+        private static readonly string SpriteResourceUri = "pack://application:,,,/ClippyVs2022;component/merlin_map.png";
 
         /// <summary>
         /// The URI for the animations json definition
         /// </summary>
         //private static string animationsResourceUri = "pack://application:,,,/ClippyVSPackage;component/animations.json";
-        private static readonly string AnimationsResourceUri = "pack://application:,,,/ClippyVs2022;component/animations.json";
+        private static readonly string AnimationsResourceUri = "pack://application:,,,/ClippyVs2022;component/merlin_agent.js";
 
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight { get; set; } = 93;
+        public static int ClipHeight { get; set; } = 128;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth { get; set; } = 124;
+        public static int ClipWidth { get; set; } = 128;
 
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        public List<ClippyAnimation> AllAnimations { get; } = new List<ClippyAnimation>();
+        public List<MerlinAnimations> AllAnimations { get; } = new List<MerlinAnimations>();
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -53,20 +54,22 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        private static readonly List<ClippyAnimation> IdleAnimations = new List<ClippyAnimation>() {
-            ClippyAnimation.Idle11,
-            ClippyAnimation.IdleRopePile,
-            ClippyAnimation.IdleAtom,
-            ClippyAnimation.IdleEyeBrowRaise,
-            ClippyAnimation.IdleFingerTap,
-            ClippyAnimation.IdleHeadScratch,
-            ClippyAnimation.IdleSideToSide,
-            ClippyAnimation.IdleSnooze };
+        public static List<MerlinAnimations> IdleAnimations = new List<MerlinAnimations>() {
+            MerlinAnimations.MoveLeft,
+MerlinAnimations.Idle3_2,
+MerlinAnimations.Idle3_1,
+MerlinAnimations.Idle2_2,
+MerlinAnimations.Idle2_1,
+MerlinAnimations.Idle1_4,
+MerlinAnimations.Idle1_1,
+MerlinAnimations.Idle1_3,
+MerlinAnimations.Idle1_2};
+
 
         /// <summary>
         /// Default ctor
         /// </summary>
-        public Clippy(Canvas canvas)
+        public Merlin(Panel canvas)
         {
             var spResUri = SpriteResourceUri;
 #if Dev19
@@ -92,9 +95,9 @@ namespace Recoding.ClippyVSPackage
 
 
             //XX Requires testing..
-            AllAnimations = new List<ClippyAnimation>();
-            var values = Enum.GetValues(typeof(ClippyAnimation));
-            AllAnimations.AddRange(values.Cast<ClippyAnimation>());
+            AllAnimations = new List<MerlinAnimations>();
+            var values = Enum.GetValues(typeof(MerlinAnimations));
+            AllAnimations.AddRange(values.Cast<MerlinAnimations>());
             RegisterIdleRandomAnimations();
         }
 
@@ -112,9 +115,11 @@ namespace Recoding.ClippyVSPackage
 
             var info = Application.GetResourceStream(uri);
 
-            if (info == null) return;
+            if (info == null) 
+                return;
 
-            var storedAnimations =
+            // Can go to Constructor/Init
+            var storedAnimations = 
                 Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippySingleAnimation>>(StreamToString(info.Stream));
 
             _animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
@@ -133,42 +138,42 @@ namespace Recoding.ClippyVSPackage
                     FillBehavior = FillBehavior.HoldEnd
                 };
 
-                var lastCol = 0;
-                var lastRow = 0;
                 double timeOffset = 0;
 
-                foreach (var frame in animation.Frames)
+                foreach (Recoding.ClippyVSPackage.Configurations.Frame frame in animation.Frames)
                 {
                     if (frame.ImagesOffsets != null)
                     {
-                        lastCol = frame.ImagesOffsets.Column;
-                        lastRow = frame.ImagesOffsets.Row;
+                        var lastCol = frame.ImagesOffsets.Column;
+                        var lastRow = frame.ImagesOffsets.Row;
+
+                        // X
+                        var xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+
+                        // Y
+                        var yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+
+                        timeOffset += ((double)frame.Duration / 1000);
+                        xDoubleAnimation.KeyFrames.Add(xKeyFrame);
+                        yDoubleAnimation.KeyFrames.Add(yKeyFrame);
                     }
-
-                    // X
-                    var xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol,
-                        KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                    // Y
-                    var yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow,
-                        KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                    timeOffset += ((double)frame.Duration / 1000);
-                    xDoubleAnimation.KeyFrames.Add(xKeyFrame);
-                    yDoubleAnimation.KeyFrames.Add(yKeyFrame);
+                    else
+                    {
+                        Debug.WriteLine("ImageOffsets was null");
+                    }
                 }
 
-                _animations.Add(animation.Name,
-                    new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation,
-                        yDoubleAnimation));
+                _animations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
+                Debug.WriteLine("Added Merlin Anim {0}", animation.Name);
+
                 xDoubleAnimation.Changed += XDoubleAnimation_Changed;
-                xDoubleAnimation.Completed += xDoubleAnimation_Completed;
+                xDoubleAnimation.Completed += XDoubleAnimation_Completed;
             }
         }
 
         private void XDoubleAnimation_Changed(object sender, EventArgs e)
         {
-            //       Debug.WriteLine("Clippy: Animation changing");
+            //Debug.WriteLine("Merlin: Animation changing");
         }
 
         /// <summary>
@@ -176,7 +181,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void xDoubleAnimation_Completed(object sender, EventArgs e)
+        private void XDoubleAnimation_Completed(object sender, EventArgs e)
         {
             IsAnimating = false;
         }
@@ -203,7 +208,7 @@ namespace Recoding.ClippyVSPackage
             StartAnimation(IdleAnimations[randomInt]);
         }
 
-        public void StartAnimation(ClippyAnimation animations, bool byPassCurrentAnimation = false)
+        public void StartAnimation(MerlinAnimations animations, bool byPassCurrentAnimation = false)
         {
             ThreadHelper.JoinableTaskFactory.Run(
                 async delegate
@@ -216,21 +221,27 @@ namespace Recoding.ClippyVSPackage
         /// Start a specific animation
         /// </summary>
         /// <param name="animationType"></param>
-        /// <param name="byPassCurrentAnimation"></param>
-        public async System.Threading.Tasks.Task StartAnimationAsync(ClippyAnimation animationType, bool byPassCurrentAnimation = false)
+        /// <param name="byPassCurrentAnimation">   </param>
+        public async System.Threading.Tasks.Task StartAnimationAsync(MerlinAnimations animationType, bool byPassCurrentAnimation = false)
         {
-            if (!IsAnimating || byPassCurrentAnimation)
+            try
             {
-                IsAnimating = true;
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                if (_animations.ContainsKey(animationType.ToString()))
+                if (!IsAnimating || byPassCurrentAnimation)
                 {
-                    ClippedImage.BeginAnimation(Canvas.LeftProperty, _animations[animationType.ToString()].Item1);
-                    ClippedImage.BeginAnimation(Canvas.TopProperty, _animations[animationType.ToString()].Item2);
-                } else
-                {
-                    Debug.WriteLine("Animation {0} not found!", animationType.ToString());
+                    var animation = _animations[animationType.ToString()];
+                    if (animation == null) return;
+
+                    Debug.WriteLine("Triggering Merlin " + animationType);
+                    Debug.WriteLine(animation.Item1.ToString() + animation.Item2);
+                    IsAnimating = true;
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    ClippedImage.BeginAnimation(Canvas.LeftProperty, animation.Item1);
+                    ClippedImage.BeginAnimation(Canvas.TopProperty, animation.Item2);
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("StartAnimAsyncException Merlin " + animationType);
             }
 
         }

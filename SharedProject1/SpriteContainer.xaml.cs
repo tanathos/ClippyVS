@@ -2,69 +2,61 @@
 using EnvDTE80;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.Settings;
 using Recoding.ClippyVSPackage.Configurations;
+using SharedProject1.AssistImpl;
 using System;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace Recoding.ClippyVSPackage
 {
-
     /// <summary>
     /// Interaction logic for SpriteContainer.xaml
     /// </summary>
-    public partial class SpriteContainer : System.Windows.Window
+    public partial class SpriteContainer
     {
-        [Import]
-        internal SVsServiceProvider ServiceProvider = null;
-
         /// <summary>
         /// The instance of Clippy, our hero
         /// </summary>
-        private Clippy _clippy { get; set; }
+        private Clippy Clippy { get; set; }
+        private Merlin Merlin { get; set; }
+        private bool _showMerlin;
 
         /// <summary>
         /// This VSIX package
         /// </summary>
-        private AsyncPackage _package;
+        private readonly AsyncPackage _package;
 
         /// <summary>
         /// The settings store of this package, to save preferences about the extension
         /// </summary>
-        private WritableSettingsStore _userSettingsStore;
+        private readonly WritableSettingsStore _userSettingsStore;
 
         private double RelativeLeft { get; set; }
 
         private double RelativeTop { get; set; }
 
-        private Events events;
-        private DocumentEvents docEvents;
-        private BuildEvents buildEvents;
-        private ProjectItemsEvents projectItemsEvents;
-        private ProjectItemsEvents csharpProjectItemsEvents;
+        private readonly DocumentEvents _docEvents;
+        private readonly BuildEvents _buildEvents;
+        private readonly FindEvents _findEvents;
+        private ProjectItemsEvents _projectItemsEvents;
+        private ProjectItemsEvents _csharpProjectItemsEvents;
 
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="package"></param>
-        public SpriteContainer(AsyncPackage package)
+        /// <param name="showMerlin"></param>
+        public SpriteContainer(AsyncPackage package, bool showMerlin = false)
         {
-            Debug.WriteLine("Entering Sprite Container Constructor");
-            _package = package;
+            this._package = package;
+            _showMerlin = showMerlin;
 
-            // Async Stuff
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var dte = (EnvDTE80.DTE2)package.GetServiceAsync(typeof(EnvDTE.DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
-
-            var settingsManager = new ShellSettingsManager(_package);
+            SettingsManager settingsManager = new ShellSettingsManager(this._package);
             _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
 
             InitializeComponent();
@@ -73,91 +65,63 @@ namespace Recoding.ClippyVSPackage
             this.Topmost = false;
 
             #region Register event handlers
-            if (package == null)
-                throw new ArgumentException("Package was null");
-
-            IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
-                .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
 
             ThreadHelper.ThrowIfNotOnUIThread();
+            //IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
+            //    .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
+            //if (activityLog == null) return;
+            //System.Windows.Forms.MessageBox.Show("Found the activity log service.");
+            var dte = (EnvDTE.DTE)package.GetServiceAsync(typeof(EnvDTE.DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
+            _docEvents = dte.Events.DocumentEvents;
+            _buildEvents = dte.Events.BuildEvents;
+            _findEvents = dte.Events.FindEvents;
+            //_projectItemsEvents = dte.Events.Proj
 
-            events = dte.Events;
-            docEvents = dte.Events.DocumentEvents;
-            buildEvents = dte.Events.BuildEvents;
+            RegisterToDteEvents(dte);
 
-            RegisterToDTEEvents(dte);
+            this.Owner.LocationChanged += Owner_LocationChanged;
+            this.Owner.StateChanged += Owner_StateOrSizeChanged;
+            this.Owner.SizeChanged += Owner_StateOrSizeChanged;
 
-            Owner.LocationChanged += Owner_LocationChanged;
-            Owner.StateChanged += Owner_StateOrSizeChanged;
-            Owner.SizeChanged += Owner_StateOrSizeChanged;
-
-            LocationChanged += SpriteContainer_LocationChanged;
+            this.LocationChanged += SpriteContainer_LocationChanged;
 
             #endregion
 
             #region -- Restore Sprite postion --
 
-            RestoreWindowPosition();
-
-            #endregion
-
-            var values = Enum.GetValues(typeof(ClippyAnimation));
-
-            //// TEMP: create a voice for each animation in the context menu
-            //var pMenu = (ContextMenu)this.Resources["cmButton"];
-
-            //foreach (ClippySingleAnimation val in values)
-            //{
-            //    var menuItem = new MenuItem()
-            //    {
-            //        Header = val.ToString(),
-            //        Name = "cmd" + val.ToString()
-            //    };
-            //    menuItem.Click += cmdTestAnimation_Click;
-            //    pMenu.Items.Add(menuItem);
-            //}
-            //// /TEMP
-
-            _clippy = new Clippy((Canvas)FindName("ClippyCanvas"));
-            _clippy.StartAnimation(ClippyAnimation.Idle1_1);
-
-        }
-
-        private void RestoreWindowPosition()
-        {
             double? storedRelativeTop = null;
             double? storedRelativeLeft = null;
 
-            double relativeTop = 0;
-            double relativeLeft = 0;
+            double relativeTop;
+            double relativeLeft;
 
             try
             {
                 if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeTop)))
-                    storedRelativeTop = double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)), CultureInfo.InvariantCulture);
+                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)));
 
                 if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeLeft)))
-                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)), CultureInfo.InvariantCulture);
+                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)));
             }
-            catch (Exception e)
+            catch (ArgumentException ex)
             {
-                Debug.Fail(e.Message);
+                Console.WriteLine($@"SettingsStore Exception while reading: {ex.Message}");
             }
 
             if (!storedRelativeTop.HasValue || !storedRelativeLeft.HasValue)
             {
-                recalculateSpritePosition(out relativeTop, out relativeLeft, true);
+                RecalculateSpritePosition(out relativeTop, out relativeLeft, true);
                 storedRelativeTop = relativeTop;
                 storedRelativeLeft = relativeLeft;
 
                 this.RelativeLeft = relativeLeft;
                 this.RelativeTop = relativeTop;
 
-                storeRelativeSpritePosition(storedRelativeTop.Value, storedRelativeLeft.Value);
+                StoreRelativeSpritePosition(storedRelativeTop.Value, storedRelativeLeft.Value);
             }
             else
             {
-                recalculateSpritePosition(out relativeTop, out relativeLeft);
+                RecalculateSpritePosition(out relativeTop, out relativeLeft);
 
                 this.RelativeLeft = relativeLeft;
                 this.RelativeTop = relativeTop;
@@ -174,94 +138,211 @@ namespace Recoding.ClippyVSPackage
 
             this.Top = ownerTop + storedRelativeTop.Value;
             this.Left = ownerLeft + storedRelativeLeft.Value;
+
+            #endregion
+
+
+            //// /TEMP
+
+            if (_showMerlin)
+                ReviveMerlin();
+            else
+                ReviveClippy();
         }
 
-        private void RegisterToDTEEvents(DTE2 dte)
+        private void PopulateContextMenu()
         {
-            docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
-            docEvents.DocumentSaved += DocumentEvents_DocumentSaved;
-            docEvents.DocumentClosing += DocEvents_DocumentClosing;
+            var values = Enum.GetValues(typeof(ClippyAnimation));
+            if (_showMerlin)
+            {
+                values = Enum.GetValues(typeof(MerlinAnimations));
+            }
+            //// TEMP: create a voice for each animation in the context menu
+#if DEBUG
+            var pMenu = (ContextMenu)this.Resources["CmButton"];
+            pMenu.Items.Clear();
 
-            buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
-            buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
+            foreach (var val in values)
+            {
+                var menuItem = new MenuItem()
+                {
+                    Header = val.ToString(),
+                    Name = "cmd" + val
+                };
+                menuItem.Click += cmdTestAnimation_Click;
+                pMenu.Items.Add(menuItem);
+            }
+#endif
 
+        }
+
+        public void ReviveClippy()
+        {
+            if (Merlin != null)
+            {
+                Merlin.Dispose();
+                Merlin = null;
+            }
+            _showMerlin = false;
+
+            ClippySpriteContainer.Width = 124;
+            ClippySpriteContainer.Height = 93;
+            ClippyGrid.Width = 124;
+            ClippyGrid.Height = 93;
+            ClippyCanvas.Height = 93;
+
+            Clippy = new Clippy((Canvas)this.FindName("ClippyCanvas"));
+            Clippy.StartAnimation(ClippyAnimation.Greeting);
+
+            PopulateContextMenu();
+        }
+
+        public void ReviveMerlin()
+        {
+            if (Clippy != null)
+            {
+                Clippy.Dispose();
+                Clippy = null;
+            }
+
+            _showMerlin = true;
+            this.Width = 128;
+            this.Height = 128;
+            ClippyGrid.Width = 150;
+            ClippyGrid.Height = 150;
+            ClippyCanvas.Height = 150;
+
+
+            Merlin = new Merlin((Canvas)this.FindName("ClippyCanvas"));
+            Merlin.StartAnimation(MerlinAnimations.Greet);
+
+            PopulateContextMenu();
+        }
+
+        private void RegisterToDteEvents(EnvDTE.DTE dte)
+        {
             ThreadHelper.ThrowIfNotOnUIThread();
+            _docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
+            _docEvents.DocumentSaved += DocumentEvents_DocumentSaved;
+            _docEvents.DocumentClosing += DocEvents_DocumentClosing;
 
-            Events events2 = dte.Events;
-            if (events2 != null)
+            _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+            _buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
+
+            _findEvents.FindDone += FindEventsClass_FindDone;
+            try
             {
-                this.projectItemsEvents = events2.SolutionItemsEvents;
-                this.projectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
-                this.projectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
-                this.projectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
-            }
+                if (_projectItemsEvents is Events2 events2)
+                {
+                    this._projectItemsEvents = events2.ProjectItemsEvents;
+                    this._projectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
+                    this._projectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
+                    this._projectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
+                }
 
-            this.csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as ProjectItemsEvents;
-            if (this.csharpProjectItemsEvents != null)
+                this._csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as ProjectItemsEvents;
+                if (this._csharpProjectItemsEvents == null)
+                    return;
+
+                this._csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
+                this._csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
+                this._csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
+            }
+            catch (Exception exev)
             {
-                this.csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
-                this.csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
-                this.csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
+                Debug.WriteLine("Events binding failure");
             }
         }
 
-#region -- IDE Event Handlers --
+        #region -- IDE Event Handlers --
 
-        private void ProjectItemsEvents_ItemRenamed(ProjectItem ProjectItem, string OldName)
+        private void ProjectItemsEvents_ItemRenamed(ProjectItem projectItem, string oldName)
         {
-            _clippy.StartAnimation(ClippyAnimation.Writing, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.Writing, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.Writing, true);
         }
 
-        private void ProjectItemsEvents_ItemRemoved(ProjectItem ProjectItem)
+        private void ProjectItemsEvents_ItemRemoved(ProjectItem projectItem)
         {
-            _clippy.StartAnimation(ClippyAnimation.EmptyTrash, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.DoMagic2, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.EmptyTrash, true);
         }
 
-        private void ProjectItemsEvents_ItemAdded(ProjectItem ProjectItem)
+        private void ProjectItemsEvents_ItemAdded(ProjectItem projectItem)
         {
-            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.Congratulate, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+
         }
 
-        private void FindEventsClass_FindDone(EnvDTE.vsFindResult Result, bool Cancelled)
+        private void FindEventsClass_FindDone(vsFindResult result, bool cancelled)
         {
-            _clippy.StartAnimation(ClippyAnimation.Searching, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.Searching, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.Searching, true);
+
         }
 
-        private void BuildEvents_OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        private void BuildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
         {
-            _clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.Congratulate, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.Congratulate, true);
+
         }
 
-        private void DocEvents_DocumentClosing(EnvDTE.Document Document)
+        private void DocEvents_DocumentClosing(Document document)
         {
-            _clippy.StartAnimation(ClippyAnimation.GestureDown, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.GestureDown, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.GestureDown, true);
+
         }
 
-        private void BuildEvents_OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        private void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
-            _clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.Processing, true); // GetTechy
+            else
+                Clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
+
         }
 
-        private void DocumentEvents_DocumentSaved(EnvDTE.Document Document)
+        private void DocumentEvents_DocumentSaved(Document document)
         {
-            _clippy.StartAnimation(ClippyAnimation.Save, true);
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.Congratulate2, true);
+            else
+                Clippy.StartAnimation(ClippyAnimation.Save, true);
+
         }
 
-        private void DocumentEvents_DocumentOpening(string DocumentPath, bool ReadOnly)
+        private void DocumentEvents_DocumentOpening(string documentPath, bool readOnly)
         {
-            _clippy.StartAnimation(ClippyAnimation.LookUp);
+
+            if (_showMerlin)
+                Merlin.StartAnimation(MerlinAnimations.LookUp);
+            else
+                Clippy.StartAnimation(ClippyAnimation.LookUp);
+
         }
 
-#endregion
+        #endregion
 
-#region -- Owner Event Handlers --
+        #region -- Owner Event Handlers --
 
         private void Owner_StateOrSizeChanged(object sender, EventArgs e)
         {
-            double relativeTop = 0;
-            double relativeLeft = 0;
-
-            recalculateSpritePosition(out relativeTop, out relativeLeft);
+            RecalculateSpritePosition(out _, out _);
         }
 
         private void Owner_LocationChanged(object sender, EventArgs e)
@@ -270,8 +351,8 @@ namespace Recoding.ClippyVSPackage
             // TODO: find a better approach
             this.LocationChanged -= SpriteContainer_LocationChanged;
 
-            double ownerTop = this.Owner.Top;
-            double ownerLeft = this.Owner.Left;
+            var ownerTop = this.Owner.Top;
+            var ownerLeft = this.Owner.Left;
 
             if (this.Owner.WindowState == WindowState.Maximized)
             {
@@ -286,9 +367,9 @@ namespace Recoding.ClippyVSPackage
             this.LocationChanged += SpriteContainer_LocationChanged;
         }
 
-#endregion
+        #endregion
 
-#region -- ClippyWindow Event Handlers --
+        #region -- ClippyWindow Event Handlers --
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -298,48 +379,77 @@ namespace Recoding.ClippyVSPackage
 
         private void Grid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            ContextMenu cm = this.FindResource("cmButton") as ContextMenu;
-            cm.PlacementTarget = sender as Button;
-            cm.IsOpen = true;
+            if (this.FindResource("CmButton") is ContextMenu cm)
+            {
+                cm.PlacementTarget = sender as Button;
+                cm.IsOpen = true;
+            }
         }
 
         private async void cmdClose_Click(object sender, RoutedEventArgs e)
         {
             var window = this;
 
-            _clippy.StartAnimation(ClippyAnimation.GoodBye, true);
-            // refactor this be handled by end event.
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            if (_showMerlin)
+                await Merlin.StartAnimationAsync(MerlinAnimations.Wave, true);
+            else
+                await Clippy.StartAnimationAsync(ClippyAnimation.GoodBye, true);
 
-            BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.DoWork += (a, r) =>
-            {
-                while (_clippy.IsAnimating) { }
+            // XXX Revert, doesn't work
+            //while (clippy.IsAnimating || merlin.IsAnimating) { }
 
-                this.Dispatcher.Invoke(new Action(() =>
-                {
-                    window.Owner.Focus();
-                    window.Close();
-
-                }), DispatcherPriority.Render);
-
-            };
-            bgWorker.RunWorkerAsync();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_package.DisposalToken);
+            window.Owner.Focus();
+            window.Close();
         }
 
         private void cmdRandom_Click(object sender, RoutedEventArgs e)
         {
             Random rmd = new Random();
-            int random_int = rmd.Next(0, _clippy.AllAnimations.Count);
+            if (!_showMerlin)
+            {
+                var randomInt = rmd.Next(0, Clippy.AllAnimations.Count);
 
-            _clippy.StartAnimation(_clippy.AllAnimations[random_int]);
+                Clippy.StartAnimation(Clippy.AllAnimations[randomInt]);
+            }
+            else
+            {
+                var randomInt = rmd.Next(0, Merlin.AllAnimations.Count);
+
+                Merlin.StartAnimation(Merlin.AllAnimations[randomInt]);
+            }
         }
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
-            ClippyAnimation animation = (ClippyAnimation)Enum.Parse(typeof(ClippyAnimation), (sender as MenuItem).Header.ToString());
+            if (_showMerlin)
+            {
+                try
+                {
+                    var merlinAnimation = (MerlinAnimations)Enum.Parse(typeof(MerlinAnimations),
+                        ((MenuItem)sender).Header.ToString());
+                    Merlin.StartAnimation(merlinAnimation, true);
+                }
+                catch (Exception)
+                {
+                    // NOP
+                }
+            }
+            else
+            {
+                try
+                {
+                    var menuItem = sender as MenuItem;
+                    if (menuItem == null) return;
 
-            _clippy.StartAnimation(animation, true);
+                    var animation = (ClippyAnimation)Enum.Parse(typeof(ClippyAnimation), menuItem.Header.ToString());
+                    Clippy.StartAnimation(animation, true);
+                }
+                catch (Exception)
+                {
+                    // NOP
+                }
+            }
         }
 
         private void ClippySpriteContainer_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -359,7 +469,14 @@ namespace Recoding.ClippyVSPackage
         {
             if (this.IsVisible)
             {
-                _clippy.StartAnimation(ClippyAnimation.Idle1_1, true);
+                if (_showMerlin)
+                {
+                    Merlin.StartAnimation(MerlinAnimations.Idle1_1, true);
+                }
+                else
+                {
+                    Clippy.StartAnimation(ClippyAnimation.Idle11, true);
+                }
             }
         }
 
@@ -368,29 +485,24 @@ namespace Recoding.ClippyVSPackage
             //System.Diagnostics.Debug.WriteLine(String.Format("Parent {0} {1}", this.Owner.Top, this.Owner.Left));
             //System.Diagnostics.Debug.WriteLine(String.Format("Child {0} {1}", this.Top, this.Left));
 
-            double relativeTop = this.Top;
-            double relativeLeft = this.Left;
-
-            recalculateSpritePosition(out relativeTop, out relativeLeft);
+            RecalculateSpritePosition(out var relativeTop, out var relativeLeft);
 
             this.RelativeLeft = relativeLeft;
             this.RelativeTop = relativeTop;
 
-            // System.Diagnostics.Debug.WriteLine($"relativeTop {relativeTop} relativeLeft {relativeLeft}");
-
             try
             {
-                storeRelativeSpritePosition(relativeTop, relativeLeft);
+                StoreRelativeSpritePosition(relativeTop, relativeLeft);
             }
             catch
             {
-
+                //NOP
             }
         }
 
-#endregion
+        #endregion
 
-        private void recalculateSpritePosition(out double relativeTop, out double relativeLeft, bool getDefaultPositioning = false)
+        private void RecalculateSpritePosition(out double relativeTop, out double relativeLeft, bool getDefaultPositioning = false)
         {
             // Managing multi-screen scenarios
             var ownerScreen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(this.Owner).Handle);
@@ -428,27 +540,36 @@ namespace Recoding.ClippyVSPackage
             }
             else
             {
-                relativeTop = ownerBottom - (Clippy.ClipHeight + 100);
-                relativeLeft = ownerRight - (Clippy.ClipWidth + 100);
+                if (!_showMerlin)
+                {
+                    relativeTop = ownerBottom - (Clippy.ClipHeight + 100);
+                    relativeLeft = ownerRight - (Clippy.ClipWidth + 100);
+                }
+                else
+                {
+                    relativeTop = ownerBottom - (Merlin.ClipHeight + 100);
+                    relativeLeft = ownerRight - (Merlin.ClipWidth + 100);
+                }
             }
         }
 
-        private void storeRelativeSpritePosition(double relativeTop, double relativeLeft)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="relativeTop"></param>
+        /// <param name="relativeLeft"></param>
+        /// <exception cref="ArgumentException"></exception>
+        private void StoreRelativeSpritePosition(double relativeTop, double relativeLeft)
         {
-            try
-            {
-                if (!_userSettingsStore.CollectionExists(Constants.SettingsCollectionPath))
-                {
-                    _userSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
-                }
 
-                _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeTop), relativeTop.ToString());
-                _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeLeft), relativeLeft.ToString());
-            }
-            catch
+            if (!_userSettingsStore.CollectionExists(Constants.SettingsCollectionPath))
             {
-
+                _userSettingsStore.CreateCollection(Constants.SettingsCollectionPath);
             }
+
+            _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeTop), relativeTop.ToString(CultureInfo.InvariantCulture));
+            _userSettingsStore.SetString(Constants.SettingsCollectionPath, nameof(RelativeLeft), relativeLeft.ToString(CultureInfo.InvariantCulture));
         }
     }
 }
+

@@ -96,6 +96,9 @@
     <Resource Include="..\SharedFiles\Resources\preview.png">
       <Link>preview.png</Link>
     </Resource>
+    <Content Include="..\SharedFiles\Resources\Command2.png">
+      <Link>Command2.png</Link>
+    </Content>
     <Content Include="LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

@@ -10,10 +10,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssistantBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\Merlin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clippy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClippyVSPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClippyVSSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Command1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Command2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\Animation.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -43,14 +45,20 @@
     <Content Include="$(MSBuildThisFileDirectory)changelog.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Command2.png" />
     <Content Include="$(MSBuildThisFileDirectory)LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\merlin_map.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)app.config" />
     <None Include="$(MSBuildThisFileDirectory)ClippyVSPackage.ruleset" />
     <None Include="$(MSBuildThisFileDirectory)Key.snk" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\merlin_agent.js" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\merlin_sounds-mp3.js" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\merlin_sounds-ogg.js" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\merlin_tempanimfile.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
