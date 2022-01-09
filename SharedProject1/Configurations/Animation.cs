@@ -3,12 +3,12 @@
 namespace Recoding.ClippyVSPackage.Configurations
 {
     /// <summary>
-    /// Represents a single animation, as it is directly mapped from the JSON
+    /// Represents a single animation, as it is directly mapped from the JSON, NOT valid for legacy Genius json, only Clippy and Merlin (Converted)
     /// </summary>
     public class ClippySingleAnimation
     {
         /// <summary>
-        /// Default ctor
+        /// Default Merlin
         /// </summary>
         public ClippySingleAnimation()
         {
@@ -25,4 +25,6 @@ namespace Recoding.ClippyVSPackage.Configurations
         /// </summary>
         public List<Frame> Frames { get; }
     }
+
+
 }

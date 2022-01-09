@@ -10,10 +10,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssistantBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\Genius.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\Merlin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clippy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClippyVSPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClippyVSSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CommandGenius.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Command1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Command2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\Animation.cs">
@@ -22,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippyAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\ColumnRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\Frame.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\Legacy\LegacySingleAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IClippyVSSettings.cs" />
@@ -50,6 +53,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="$(MSBuildThisFileDirectory)Resources\Merlin\merlin_map.png" />
+    <Resource Include="$(MSBuildThisFileDirectory)Resources\Genius\genius_map.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)app.config" />

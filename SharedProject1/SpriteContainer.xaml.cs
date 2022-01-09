@@ -24,7 +24,9 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private Clippy Clippy { get; set; }
         private Merlin Merlin { get; set; }
+        private Genius Genius { get; set; }
         private bool _showMerlin;
+        private bool _showGenius;
 
         /// <summary>
         /// This VSIX package
@@ -49,12 +51,14 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Default ctor
         /// </summary>
-        /// <param name="package"></param>
-        /// <param name="showMerlin"></param>
-        public SpriteContainer(AsyncPackage package, bool showMerlin = false)
+        /// <param name="package">The Shell Package</param>
+        /// <param name="showMerlin">Indicates if Merlin should be shown - get rid of this soon</param>
+        /// <param name="showGenius">Indicates if Genius should be shown - dito</param>
+        public SpriteContainer(AsyncPackage package, bool showMerlin = false, bool showGenius = false)
         {
             this._package = package;
             _showMerlin = showMerlin;
+            _showGenius = showGenius;
 
             SettingsManager settingsManager = new ShellSettingsManager(this._package);
             _userSettingsStore = settingsManager.GetWritableSettingsStore(SettingsScope.UserSettings);
@@ -146,6 +150,8 @@ namespace Recoding.ClippyVSPackage
 
             if (_showMerlin)
                 ReviveMerlin();
+            else if (_showGenius)
+                ReviveGenius();
             else
                 ReviveClippy();
         }
@@ -156,6 +162,10 @@ namespace Recoding.ClippyVSPackage
             if (_showMerlin)
             {
                 values = Enum.GetValues(typeof(MerlinAnimations));
+            }
+            if (_showGenius)
+            {
+                values = Enum.GetValues(typeof(GeniusAnimations));
             }
             //// TEMP: create a voice for each animation in the context menu
 #if DEBUG
@@ -184,6 +194,7 @@ namespace Recoding.ClippyVSPackage
                 Merlin = null;
             }
             _showMerlin = false;
+            _showGenius = false;
 
             ClippySpriteContainer.Width = 124;
             ClippySpriteContainer.Height = 93;
@@ -206,6 +217,7 @@ namespace Recoding.ClippyVSPackage
             }
 
             _showMerlin = true;
+            _showGenius = false;
             this.Width = 128;
             this.Height = 128;
             ClippyGrid.Width = 150;
@@ -215,6 +227,29 @@ namespace Recoding.ClippyVSPackage
 
             Merlin = new Merlin((Canvas)this.FindName("ClippyCanvas"));
             Merlin.StartAnimation(MerlinAnimations.Greet);
+
+            PopulateContextMenu();
+        }
+
+        public void ReviveGenius()
+        {
+            if (Clippy != null)
+            {
+                Clippy.Dispose();
+                Clippy = null;
+            }
+
+            _showGenius = true;
+            _showMerlin = false;
+            this.Width = 124;
+            this.Height = 93;
+            ClippyGrid.Width = 124;
+            ClippyGrid.Height = 93;
+            ClippyCanvas.Height = 93;
+
+
+            Genius = new Genius((Canvas)this.FindName("ClippyCanvas"));
+            Genius.StartAnimation(GeniusAnimations.Greeting);
 
             PopulateContextMenu();
         }
@@ -260,6 +295,8 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.Writing, true);
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.Greeting);
             else
                 Clippy.StartAnimation(ClippyAnimation.Writing, true);
         }
@@ -268,6 +305,8 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.DoMagic2, true);
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.EmptyTrash);
             else
                 Clippy.StartAnimation(ClippyAnimation.EmptyTrash, true);
         }
@@ -276,6 +315,8 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.Congratulate, true);
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.Congratulate);
             else
                 Clippy.StartAnimation(ClippyAnimation.Congratulate, true);
 
@@ -285,6 +326,9 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.Searching, true);
+
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.Searching);
             else
                 Clippy.StartAnimation(ClippyAnimation.Searching, true);
 
@@ -294,6 +338,9 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.Congratulate, true);
+
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.Congratulate);
             else
                 Clippy.StartAnimation(ClippyAnimation.Congratulate, true);
 
@@ -303,6 +350,9 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.GestureDown, true);
+
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.GestureDown);
             else
                 Clippy.StartAnimation(ClippyAnimation.GestureDown, true);
 
@@ -312,6 +362,9 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.Processing, true); // GetTechy
+
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.GetTechy);
             else
                 Clippy.StartAnimation(ClippyAnimation.Processing, true); // GetTechy
 
@@ -321,6 +374,8 @@ namespace Recoding.ClippyVSPackage
         {
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.Congratulate2, true);
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.Save);
             else
                 Clippy.StartAnimation(ClippyAnimation.Save, true);
 
@@ -331,6 +386,8 @@ namespace Recoding.ClippyVSPackage
 
             if (_showMerlin)
                 Merlin.StartAnimation(MerlinAnimations.LookUp);
+            else if (_showGenius)
+                Genius.StartAnimation(GeniusAnimations.LookUp);
             else
                 Clippy.StartAnimation(ClippyAnimation.LookUp);
 
@@ -392,11 +449,10 @@ namespace Recoding.ClippyVSPackage
 
             if (_showMerlin)
                 await Merlin.StartAnimationAsync(MerlinAnimations.Wave, true);
+            else if (_showGenius)
+                await Genius.StartAnimationAsync(GeniusAnimations.Goodbye);
             else
                 await Clippy.StartAnimationAsync(ClippyAnimation.GoodBye, true);
-
-            // XXX Revert, doesn't work
-            //while (clippy.IsAnimating || merlin.IsAnimating) { }
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_package.DisposalToken);
             window.Owner.Focus();
@@ -412,6 +468,12 @@ namespace Recoding.ClippyVSPackage
 
                 Clippy.StartAnimation(Clippy.AllAnimations[randomInt]);
             }
+            else if (_showGenius)
+            {
+                var randomInt = rmd.Next(0, Genius.AllAnimations.Count);
+
+                Genius.StartAnimation(Genius.AllAnimations[randomInt]);
+            }
             else
             {
                 var randomInt = rmd.Next(0, Merlin.AllAnimations.Count);
@@ -422,22 +484,23 @@ namespace Recoding.ClippyVSPackage
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
-            if (_showMerlin)
+            try
             {
-                try
+                if (_showMerlin)
                 {
+
                     var merlinAnimation = (MerlinAnimations)Enum.Parse(typeof(MerlinAnimations),
                         ((MenuItem)sender).Header.ToString());
                     Merlin.StartAnimation(merlinAnimation, true);
+
                 }
-                catch (Exception)
+                else if (_showGenius)
                 {
-                    // NOP
+                    var geniusAnimation = (GeniusAnimations)Enum.Parse(typeof(GeniusAnimations),
+                            ((MenuItem)sender).Header.ToString());
+                    Genius.StartAnimation(geniusAnimation, true);
                 }
-            }
-            else
-            {
-                try
+                else
                 {
                     var menuItem = sender as MenuItem;
                     if (menuItem == null) return;
@@ -445,10 +508,10 @@ namespace Recoding.ClippyVSPackage
                     var animation = (ClippyAnimation)Enum.Parse(typeof(ClippyAnimation), menuItem.Header.ToString());
                     Clippy.StartAnimation(animation, true);
                 }
-                catch (Exception)
-                {
-                    // NOP
-                }
+            }
+            catch (Exception)
+            {
+                // NOP
             }
         }
 
@@ -467,11 +530,15 @@ namespace Recoding.ClippyVSPackage
 
         private void ClippySpriteContainer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (this.IsVisible)
+            if (IsVisible)
             {
                 if (_showMerlin)
                 {
                     Merlin.StartAnimation(MerlinAnimations.Idle1_1, true);
+                }
+                else if (_showGenius)
+                {
+                    Genius.StartAnimation(GeniusAnimations.Idle1, true);
                 }
                 else
                 {
@@ -540,15 +607,21 @@ namespace Recoding.ClippyVSPackage
             }
             else
             {
-                if (!_showMerlin)
-                {
-                    relativeTop = ownerBottom - (Clippy.ClipHeight + 100);
-                    relativeLeft = ownerRight - (Clippy.ClipWidth + 100);
-                }
-                else
+                if (_showMerlin)
                 {
                     relativeTop = ownerBottom - (Merlin.ClipHeight + 100);
                     relativeLeft = ownerRight - (Merlin.ClipWidth + 100);
+
+                }
+                else if (_showGenius)
+                {
+                    relativeTop = ownerBottom - (Genius.ClipHeight + 100);
+                    relativeLeft = ownerRight - (Genius.ClipWidth + 100);
+                }
+                else
+                {
+                    relativeTop = ownerBottom - (Clippy.ClipHeight + 100);
+                    relativeLeft = ownerRight - (Clippy.ClipWidth + 100);
                 }
             }
         }

@@ -61,7 +61,7 @@
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
 
-      <Button guid="guidClippyVSPackageCmdSet" id="cmdShowClippy" priority="0x0100" type="Button">
+     <Button guid="guidClippyVSPackageCmdSet" id="cmdShowClippy" priority="0x0100" type="Button">
         <Parent guid="guidClippyVSPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
@@ -73,6 +73,13 @@
         <Icon guid="guidImages2" id="bmpPic1" />
         <Strings>
           <ButtonText>Merlin Assistant</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidClippyVSPackageCmdSet" id="cmdidCommandGenius" priority="0x0100" type="Button">
+        <Parent guid="guidClippyVSPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImagesGenius" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Genius Assistant</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -87,6 +94,7 @@
       <Bitmap guid="guidImages" href="Resources\Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows" />
       <Bitmap guid="guidImages1" href="Resources\Command1.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
       <Bitmap guid="guidImages2" href="Resources\Command2.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
+      <Bitmap guid="guidImagesGenius" href="Resources\CommandGenius.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
     </Bitmaps>
  
   </Commands>
@@ -104,8 +112,10 @@
 
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="cmdShowClippy" value="0x0100" />
+      <IDSymbol name="cmdShowGenius" value="0x0101" />
       <IDSymbol value="4129" name="cmdidCommand1" />
       <IDSymbol value="4130" name="cmdidCommand2" />
+      <IDSymbol value="4131" name="cmdidCommandGenius" />
     </GuidSymbol>
     
     
@@ -128,6 +138,14 @@
       <IDSymbol name="bmpPicStrikethrough" value="6" />
     </GuidSymbol>
     <GuidSymbol value="{52b273b1-9510-470f-a9ed-efb5a5ae9b2d}" name="guidImages2">
+      <IDSymbol name="bmpPic1" value="1" />
+      <IDSymbol name="bmpPic2" value="2" />
+      <IDSymbol name="bmpPicSearch" value="3" />
+      <IDSymbol name="bmpPicX" value="4" />
+      <IDSymbol name="bmpPicArrows" value="5" />
+      <IDSymbol name="bmpPicStrikethrough" value="6" />
+    </GuidSymbol>
+    <GuidSymbol value="{52b273b1-9510-470f-a9ed-efb5a5ae9b2e}" name="guidImagesGenius">
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
       <IDSymbol name="bmpPicSearch" value="3" />

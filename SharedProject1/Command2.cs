@@ -15,7 +15,7 @@ namespace SharedProject1
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
+        public static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdc");
 
         /// <summary>
         /// VS Package that provides this command, not null.

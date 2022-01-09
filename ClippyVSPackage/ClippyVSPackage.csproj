@@ -58,6 +58,9 @@
     <Resource Include="..\SharedFiles\Resources\animations.json">
       <Link>animations.json</Link>
     </Resource>
+    <Resource Include="..\SharedFiles\Resources\Genius\Genius.json">
+      <Link>Genius.json</Link>
+    </Resource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

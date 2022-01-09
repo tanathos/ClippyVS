@@ -74,9 +74,15 @@ namespace Recoding.ClippyVSPackage
                     var menuCommand2Id = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.CmdShowMerlin);
                     var menuItem2 = new MenuCommand(MenuItemCallback, menuCommand2Id);
                     mcs.AddCommand(menuItem2);
+
+                    var menuCommandGeniusId = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.cmdidCommandGenius);
+                    var menuItemGenius = new MenuCommand(MenuItemCallback, menuCommandGeniusId);
+                    mcs.AddCommand(menuItemGenius);
                 }
+
                 await Command1.InitializeAsync(this).ConfigureAwait(true);
-                await Command2.InitializeAsync(this);
+                await Command2.InitializeAsync(this).ConfigureAwait(true);
+                await CommandGenius.InitializeAsync(this).ConfigureAwait(true);
             }
             catch (Exception e)
             {
@@ -115,11 +121,37 @@ namespace Recoding.ClippyVSPackage
             SpriteContainer.ReviveClippy();
         }
 
+        internal void ReviveGeniusCommand()
+        {
+            var visibleAssistants = Application.Current.Windows.OfType<SpriteContainer>();
+            if (!visibleAssistants.Any())
+            {
+                SpriteContainer = new SpriteContainer(this, true);
+            }
+
+            Settings.SelectedAssistantName = "Genius";
+            Settings.SaveSettings();
+
+            Application.Current.Windows.OfType<SpriteContainer>().First().Show();
+            SpriteContainer.ReviveGenius();
+        }
+
         private async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
             var token = new CancellationToken();
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-            SpriteContainer = Settings.SelectedAssistantName.Contains("merlin") ? new SpriteContainer(this, true) : new SpriteContainer(this);
+            switch (Settings.SelectedAssistantName)
+            {
+                case "Genius":
+                    SpriteContainer = new SpriteContainer(this, false, true);
+                    break;
+                case "Merlin":
+                    SpriteContainer = new SpriteContainer(this, true, false);
+                    break;
+                default:
+                    SpriteContainer = new SpriteContainer(this, false, false);
+                    break;
+            }
 
             if (Settings.ShowAtStartup)
                 SpriteContainer.Show();
