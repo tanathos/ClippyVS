@@ -177,7 +177,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
                 {
                     Header = val.ToString(),
                     Name = "cmd" + val
-                };
+                }; 
                 menuItem.Click += cmdTestAnimation_Click;
                 pMenu.Items.Add(menuItem);
             }
