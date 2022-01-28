@@ -1,9 +1,17 @@
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
-name: VSIX Publisher
- uses:cezarypiatek/VsixPublisherAction@0.2
- with:extension-file:ClippyVs2022\bin\Release
-    publish-manifest-file:ClippyVs2022\bin\Release\publishManifest.json
-    personal-access-code:${{ secrets.VS_PUBLISHER_ACCESS_TOKEN }}
+      
+jobs:
+  my-job:
+    name: My Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: VSIX Publisher
+        run:
+          uses:cezarypiatek/VsixPublisherAction@0.2
+          with:extension-file:ClippyVs2022\bin\Release
+          publish-manifest-file:ClippyVs2022\bin\Release\publishManifest.json
+          personal-access-code:${{ secrets.VS_PUBLISHER_ACCESS_TOKEN }}
