@@ -4,6 +4,6 @@ on:
       - "*"
 name: VSIX Publisher
  uses:cezarypiatek/VsixPublisherAction@0.2
- with:extension-file:src\MappingGenerator.Vsix\bin\Release\MappingGenerator.vsix
-    publish-manifest-file:src\MappingGenerator.Vsix\publishManifest.json
+ with:extension-file:ClippyVs2022\bin\Release
+    publish-manifest-file:ClippyVs2022\bin\Release\publishManifest.json
     personal-access-code:${{ secrets.VS_PUBLISHER_ACCESS_TOKEN }}
