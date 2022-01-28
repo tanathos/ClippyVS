@@ -11,6 +11,7 @@ using Microsoft.VisualStudio;
 using System.Runtime.InteropServices;
 using System.Linq;
 using SharedProject1;
+using Task = System.Threading.Tasks.Task;
 
 namespace Recoding.ClippyVSPackage
 {
@@ -47,7 +48,7 @@ namespace Recoding.ClippyVSPackage
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             try
             {
@@ -72,10 +73,10 @@ namespace Recoding.ClippyVSPackage
                     mcs.AddCommand(menuItem);
 
                     var menuCommand2Id = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.CmdShowMerlin);
-                    var menuItem2 = new MenuCommand(MenuItemCallback, menuCommand2Id);
+                    var menuItem2 = new OleMenuCommand(MenuItemCallback, menuCommand2Id);
                     mcs.AddCommand(menuItem2);
 
-                    var menuCommandGeniusId = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.cmdidCommandGenius);
+                    var menuCommandGeniusId = new CommandID(Constants.GuidClippyVsCmdSet, (int)PkgCmdIdList.CmdidCommandGenius);
                     var menuItemGenius = new MenuCommand(MenuItemCallback, menuCommandGeniusId);
                     mcs.AddCommand(menuItemGenius);
                 }
@@ -138,23 +139,35 @@ namespace Recoding.ClippyVSPackage
 
         private async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
-            var token = new CancellationToken();
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-            switch (Settings.SelectedAssistantName)
-            {
-                case "Genius":
-                    SpriteContainer = new SpriteContainer(this, false, true);
-                    break;
-                case "Merlin":
-                    SpriteContainer = new SpriteContainer(this, true, false);
-                    break;
-                default:
-                    SpriteContainer = new SpriteContainer(this, false, false);
-                    break;
-            }
+            await MainWindow_ContentRenderedAsync();
+        }
 
-            if (Settings.ShowAtStartup)
-                SpriteContainer.Show();
+        private async Task MainWindow_ContentRenderedAsync()
+        {
+            try
+            {
+                var token = new CancellationToken();
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+                switch (Settings.SelectedAssistantName)
+                {
+                    case "Genius":
+                        SpriteContainer = new SpriteContainer(this, false, true);
+                        break;
+                    case "Merlin":
+                        SpriteContainer = new SpriteContainer(this, true);
+                        break;
+                    default:
+                        SpriteContainer = new SpriteContainer(this);
+                        break;
+                }
+
+                if (Settings.ShowAtStartup)
+                    SpriteContainer.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Application Exception occured. Closing." + Environment.NewLine + ex.Message);
+            }
         }
 
         #endregion
@@ -168,7 +181,7 @@ namespace Recoding.ClippyVSPackage
         {
 
             ThreadHelper.ThrowIfNotOnUIThread();
-            ((ClippyVisualStudioPackage)this).ReviveClippyCommand();
+            this.ReviveClippyCommand();
         }
     }
 }

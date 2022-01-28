@@ -1,5 +1,4 @@
 ﻿using EnvDTE;
-using EnvDTE80;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Settings;
@@ -45,7 +44,6 @@ namespace Recoding.ClippyVSPackage
         private readonly DocumentEvents _docEvents;
         private readonly BuildEvents _buildEvents;
         private readonly FindEvents _findEvents;
-        private ProjectItemsEvents _projectItemsEvents;
         private ProjectItemsEvents _csharpProjectItemsEvents;
 
         /// <summary>
@@ -75,7 +73,7 @@ namespace Recoding.ClippyVSPackage
             //    .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
             //if (activityLog == null) return;
             //System.Windows.Forms.MessageBox.Show("Found the activity log service.");
-            var dte = (EnvDTE.DTE)package.GetServiceAsync(typeof(EnvDTE.DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
+            var dte = (DTE)package.GetServiceAsync(typeof(DTE)).ConfigureAwait(true).GetAwaiter().GetResult();
             _docEvents = dte.Events.DocumentEvents;
             _buildEvents = dte.Events.BuildEvents;
             _findEvents = dte.Events.FindEvents;
@@ -158,7 +156,9 @@ namespace Recoding.ClippyVSPackage
 
         private void PopulateContextMenu()
         {
-            var values = Enum.GetValues(typeof(ClippyAnimation));
+
+#if DEBUG
+var values = Enum.GetValues(typeof(ClippyAnimation));
             if (_showMerlin)
             {
                 values = Enum.GetValues(typeof(MerlinAnimations));
@@ -168,7 +168,6 @@ namespace Recoding.ClippyVSPackage
                 values = Enum.GetValues(typeof(GeniusAnimations));
             }
             //// TEMP: create a voice for each animation in the context menu
-#if DEBUG
             var pMenu = (ContextMenu)this.Resources["CmButton"];
             pMenu.Items.Clear();
 
@@ -200,9 +199,10 @@ namespace Recoding.ClippyVSPackage
             ClippySpriteContainer.Height = 93;
             ClippyGrid.Width = 124;
             ClippyGrid.Height = 93;
-            ClippyCanvas.Height = 93;
+            AssistantCanvasOverlay0.Height = 93;
+            AssistantCanvasOverlay1.Visibility = Visibility.Hidden;
 
-            Clippy = new Clippy((Canvas)this.FindName("ClippyCanvas"));
+            Clippy = new Clippy((Canvas)FindName("AssistantCanvasOverlay0"));
             Clippy.StartAnimation(ClippyAnimation.Greeting);
 
             PopulateContextMenu();
@@ -222,10 +222,10 @@ namespace Recoding.ClippyVSPackage
             this.Height = 128;
             ClippyGrid.Width = 150;
             ClippyGrid.Height = 150;
-            ClippyCanvas.Height = 150;
+            AssistantCanvasOverlay0.Height = 150;
+            AssistantCanvasOverlay1.Visibility = Visibility.Hidden;
 
-
-            Merlin = new Merlin((Canvas)this.FindName("ClippyCanvas"));
+            Merlin = new Merlin((Canvas)this.FindName("AssistantCanvasOverlay0"));
             Merlin.StartAnimation(MerlinAnimations.Greet);
 
             PopulateContextMenu();
@@ -239,22 +239,23 @@ namespace Recoding.ClippyVSPackage
                 Clippy = null;
             }
 
-            _showGenius = true;
+            _showGenius = true; 
             _showMerlin = false;
             this.Width = 124;
             this.Height = 93;
             ClippyGrid.Width = 124;
             ClippyGrid.Height = 93;
-            ClippyCanvas.Height = 93;
+            AssistantCanvasOverlay0.Height = 93;
+            AssistantCanvasOverlay1.Visibility = Visibility.Visible;
 
-
-            Genius = new Genius((Canvas)this.FindName("ClippyCanvas"));
+            // Genius has to layers, thus overlay 0 and 1 need to be passed for this one.
+            Genius = new Genius((Canvas)FindName("AssistantCanvasOverlay0"), (Canvas)FindName("AssistantCanvasOverlay1"));
             Genius.StartAnimation(GeniusAnimations.Greeting);
 
             PopulateContextMenu();
         }
 
-        private void RegisterToDteEvents(EnvDTE.DTE dte)
+        private void RegisterToDteEvents(DTE dte)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             _docEvents.DocumentOpening += DocumentEvents_DocumentOpening;
@@ -267,14 +268,7 @@ namespace Recoding.ClippyVSPackage
             _findEvents.FindDone += FindEventsClass_FindDone;
             try
             {
-                if (_projectItemsEvents is Events2 events2)
-                {
-                    this._projectItemsEvents = events2.ProjectItemsEvents;
-                    this._projectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
-                    this._projectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
-                    this._projectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
-                }
-
+                // RIP Project Events - is there a replacement ? Please Check...
                 this._csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as ProjectItemsEvents;
                 if (this._csharpProjectItemsEvents == null)
                     return;
@@ -285,7 +279,7 @@ namespace Recoding.ClippyVSPackage
             }
             catch (Exception exev)
             {
-                Debug.WriteLine("Events binding failure");
+                Debug.WriteLine("Events binding failure {0}", exev.Message);
             }
         }
 
