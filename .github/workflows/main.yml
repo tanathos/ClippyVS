@@ -5,13 +5,15 @@ on:
       - "*"
       
 jobs:
-  my-job:
-    name: My Job
-    runs-on: ubuntu-latest
+  test_vs_publisher:
+    runs-on: windows-latest
+    name: A job to test VSPublisher
     steps:
-      - name: VSIX Publisher
-        run:
-          uses:cezarypiatek/VsixPublisherAction@0.2
-          with:extension-file:ClippyVs2022\bin\Release
-          publish-manifest-file:ClippyVs2022\bin\Release\publishManifest.json
-          personal-access-code:${{ secrets.VS_PUBLISHER_ACCESS_TOKEN }}
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Test Publisher
+      uses: ./
+      with:
+        extension-file: ClippyVs2022\bin\Release
+        publish-manifest-file: ClippyVs2022\bin\Release\publishManifest.json
+        personal-access-code: ${{ secrets.VS_PUBLISHER_ACCESS_TOKEN }}
