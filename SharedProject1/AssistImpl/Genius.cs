@@ -11,7 +11,9 @@ using System.Windows.Threading;
 using System.Linq;
 using Recoding.ClippyVSPackage;
 using System.Diagnostics;
+using System.Windows.Media.Effects;
 using System.Windows.Resources;
+using Microsoft.VisualStudio.PlatformUI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Recoding.ClippyVSPackage.Configurations.Legacy;
@@ -48,7 +50,7 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// The image that holds the sprite
         /// </summary>
-        protected Image ClippedImage1;
+        private readonly Image _clippedImage1;
 
         /// <summary>
         /// The list of all the available animations
@@ -63,7 +65,7 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<GeniusAnimations> IdleAnimations = new List<GeniusAnimations>() {
+        private static readonly List<GeniusAnimations> IdleAnimations = new List<GeniusAnimations>() {
 GeniusAnimations.Idle0,
 GeniusAnimations.Idle1,
 GeniusAnimations.Idle2,
@@ -81,13 +83,14 @@ GeniusAnimations.Idle9};
         /// </summary>
         public Genius(Panel canvas, Panel canvas1)
         {
+            // ReSharper disable once RedundantAssignment
             var spResUri = SpriteResourceUri;
 #if Dev19
             spResUri = SpriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
 #endif
 #if Dev22
 #endif
-            this.Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
+            Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
 
             ClippedImage = new Image
             {
@@ -95,27 +98,31 @@ GeniusAnimations.Idle9};
                 Stretch = Stretch.None
             };
 
-            ClippedImage1 = new Image
+            _clippedImage1 = new Image
             {
                 Source = Sprite,
                 Stretch = Stretch.None
             };
 
             ClippedImage.Visibility = Visibility.Visible;
-            ClippedImage1.Visibility = Visibility.Visible;
+            _clippedImage1.Visibility = Visibility.Collapsed;
 
             if (canvas == null) return;
 
             canvas.Children.Clear();
             canvas.Children.Add(ClippedImage);
+            //canvas.Effect = new BlurEffect();
 
             canvas1.Children.Clear();
-            canvas1.Children.Add(ClippedImage1);
+            canvas1.Children.Add(_clippedImage1);
+            //canvas1.Effect = new DropShadowEffect();
+
+            canvas.AddPropertyChangeHandler(Canvas.LeftProperty, LeftPropChangedHandler);
+            canvas1.AddPropertyChangeHandler(Canvas.LeftProperty, LeftPropChangedHandler);
 
 
             if (_animations == null)
                 RegisterAnimations();
-
 
             //XX Requires testing..
             AllAnimations = new List<GeniusAnimations>();
@@ -124,27 +131,17 @@ GeniusAnimations.Idle9};
             RegisterIdleRandomAnimations();
         }
 
+        private void LeftPropChangedHandler(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Registers all the animation definitions into a static property
         /// </summary>
         private void RegisterAnimations()
         {
-            var spResUri = AnimationsResourceUri;
-
-#if Dev19
-            spResUri = spResUri.Replace("ClippyVs2022", "ClippyVSPackage");
-#endif
-            var uri = new Uri(spResUri, UriKind.RelativeOrAbsolute);
-
-            var animJStream = Application.GetResourceStream(uri);
-
-            if (animJStream == null)
-                return;
-
-            // Can go to Constructor/Init
-            List<string> errors = new List<string>();
-
-            var storedAnimations = DeserializeAnimations(animJStream, errors);
+            var storedAnimations = ParseAnimDescriptions();
             if (storedAnimations == null) return;
 
             _animations = new OverlayAnimations(storedAnimations.Count);
@@ -181,31 +178,23 @@ GeniusAnimations.Idle9};
 
                 double timeOffset = 0;
 
-                var idx = 0;
-                foreach (Recoding.ClippyVSPackage.Configurations.Legacy.Frame frame in animation.Frames)
+                var frameIndex = 0;
+                var animationMaxLayers = 0;
+                foreach (var frame in animation.Frames)
                 {
                     if (frame.ImagesOffsets != null)
                     {
-                        //var i = 0; // get rid of this once overlay processing is implemented
                         var overlays = frame.ImagesOffsets.Count;
-                        for (int i = 0; i < overlays; i++)
+                        if (overlays > animationMaxLayers)
                         {
-                            Debug.WriteLine("Processing Overlay " + i);
-                            Debug.WriteLine("Overlay is actually - layers - displayed at the same time...");
+                            animationMaxLayers = overlays;
+                        }
 
-                            var lastCol = frame.ImagesOffsets[i][0];
-                            var lastRow = frame.ImagesOffsets[i][1];
+                        for (var layerNum = 0; layerNum < overlays; layerNum++)
+                        {
+                            Debug.WriteLine("Processing Overlay " + layerNum);
 
-                            // X
-                            var xKeyFrame = new DiscreteDoubleKeyFrame(lastCol * -1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                            // Y
-                            var yKeyFrame = new DiscreteDoubleKeyFrame(lastRow * -1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                            // Sendmail is f...cked.... fix, reverse engineer or something.
-                            // XXXX Remove slowdown
-                            //timeOffset += ((double)frame.Duration / 1000 * 4);
-                            
+                            // Prepare Key frame for all potential layers (max 3)
                             xDoubleAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame());
                             yDoubleAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame());
                             xDoubleAnimation1.KeyFrames.Add(new DiscreteDoubleKeyFrame());
@@ -213,26 +202,34 @@ GeniusAnimations.Idle9};
                             xDoubleAnimation2.KeyFrames.Add(new DiscreteDoubleKeyFrame());
                             yDoubleAnimation2.KeyFrames.Add(new DiscreteDoubleKeyFrame());
 
-                            switch (i)
+                            //Overlay is actually - layers - displayed at the same time...
+                            var lastCol = frame.ImagesOffsets[layerNum][0];
+                            var lastRow = frame.ImagesOffsets[layerNum][1];
+
+                            // X and Y
+                            var xKeyFrame = new DiscreteDoubleKeyFrame(lastCol * -1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                            var yKeyFrame = new DiscreteDoubleKeyFrame(lastRow * -1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+
+                            switch (layerNum)
                             {
                                 case 0:
-                                    xDoubleAnimation.KeyFrames.Insert(idx, xKeyFrame);
-                                    yDoubleAnimation.KeyFrames.Insert(idx, yKeyFrame);
+                                    xDoubleAnimation.KeyFrames.Insert(frameIndex, xKeyFrame);
+                                    yDoubleAnimation.KeyFrames.Insert(frameIndex, yKeyFrame);
                                     break;
                                 case 1:
-                                    xDoubleAnimation1.KeyFrames.Insert(idx,xKeyFrame);
-                                    yDoubleAnimation1.KeyFrames.Insert(idx,yKeyFrame);
+                                    xDoubleAnimation1.KeyFrames.Insert(frameIndex, xKeyFrame);
+                                    yDoubleAnimation1.KeyFrames.Insert(frameIndex, yKeyFrame);
                                     break;
                                 case 2:
-                                    xDoubleAnimation2.KeyFrames.Insert(idx,xKeyFrame);
-                                    yDoubleAnimation2.KeyFrames.Insert(idx, yKeyFrame);
+                                    xDoubleAnimation2.KeyFrames.Insert(frameIndex, xKeyFrame);
+                                    yDoubleAnimation2.KeyFrames.Insert(frameIndex, yKeyFrame);
                                     break;
-
                             }
                         }
-                        timeOffset += ((double)frame.Duration / 1000);
 
-                        idx++;
+                        //timeOffset += ((double)frame.Duration / 1000 * 4);
+                        timeOffset += ((double)frame.Duration / 1000);
+                        frameIndex++;
                     }
                     else
                     {
@@ -243,13 +240,36 @@ GeniusAnimations.Idle9};
                 _animations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
                 _animations.Add1(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation1, yDoubleAnimation1));
                 _animations.Add2(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation2, yDoubleAnimation2));
+                _animations.AddLayers(animation.Name, animationMaxLayers);
+
                 Debug.WriteLine("Added Genius Anim {0}" + animation.Name);
                 Debug.WriteLine("...  Frame Count: " + xDoubleAnimation.KeyFrames.Count + " - " +
                                 yDoubleAnimation.KeyFrames.Count);
+                Debug.WriteLine($"Animation {animation.Name} has {animationMaxLayers} layers");
 
-                xDoubleAnimation.Changed += XDoubleAnimation_Changed;
                 xDoubleAnimation.Completed += XDoubleAnimation_Completed;
             }
+        }
+
+        private static List<GeniusSingleAnimation> ParseAnimDescriptions()
+        {
+            var spResUri = AnimationsResourceUri;
+
+#if Dev19
+            spResUri = spResUri.Replace("ClippyVs2022", "ClippyVSPackage");
+#endif
+            var uri = new Uri(spResUri, UriKind.RelativeOrAbsolute);
+
+            var animJStream = Application.GetResourceStream(uri);
+
+            if (animJStream == null)
+                return null;
+
+            // Can go to Constructor/Init
+            var errors = new List<string>();
+
+            var storedAnimations = DeserializeAnimations(animJStream, errors);
+            return storedAnimations;
         }
 
         private static List<GeniusSingleAnimation> DeserializeAnimations(StreamResourceInfo animJStream, List<string> errors)
@@ -269,11 +289,6 @@ GeniusAnimations.Idle9};
             return storedAnimations;
         }
 
-        private void XDoubleAnimation_Changed(object sender, EventArgs e)
-        {
-            Debug.WriteLine("Genius: Animation changing");
-        }
-
         /// <summary>
         /// Callback to execute at the end of an animation
         /// </summary>
@@ -283,6 +298,11 @@ GeniusAnimations.Idle9};
         {
             IsAnimating = false;
             ClippedImage.Visibility = Visibility.Visible;
+            (ClippedImage.Parent as Canvas).Visibility = Visibility.Visible;
+
+            // Rememver to modify canvas, not image!
+            _clippedImage1.Visibility = Visibility.Hidden;
+            (_clippedImage1.Parent as Canvas).Visibility=Visibility.Hidden;
         }
 
         /// <summary>
@@ -330,25 +350,30 @@ GeniusAnimations.Idle9};
                     var animation = _animations[animationType.ToString()];
                     if (animation == null) return;
 
-                    var animation1 = _animations.GetAnimation1(animationType.ToString());
                     Debug.WriteLine("Triggering Genius " + animationType);
-                    Debug.WriteLine(animation._keyFrames.Item1.ToString() + animation._keyFrames.Item2);
-                    IsAnimating = true;
-                    ClippedImage1.Visibility = Visibility.Visible;
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    ClippedImage.BeginAnimation(Canvas.LeftProperty, animation._keyFrames.Item1);
-                    ClippedImage.BeginAnimation(Canvas.TopProperty, animation._keyFrames.Item2);
+                    Debug.WriteLine(animation.KeyFrames.Item1.ToString() + animation.KeyFrames.Item2);
 
-                    
-                    ClippedImage1.BeginAnimation(Canvas.LeftProperty, animation1._keyFrames.Item1);
-                    ClippedImage1.BeginAnimation(Canvas.TopProperty, animation1._keyFrames.Item2);
+                    var animation1 = _animations.GetAnimation1(animationType.ToString());
+                    var animLayers = _animations.GetAnimationLayerCnt(animationType.ToString());
+                    IsAnimating = true;
+
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    // well have to skip this (leave collapsed) if only one layer
+                    if (animLayers > 1) {
+                    _clippedImage1.Visibility = Visibility.Visible;
+                    (_clippedImage1.Parent as Canvas).Visibility = Visibility.Visible;
+                    }
+                    ClippedImage.BeginAnimation(Canvas.LeftProperty, animation.KeyFrames.Item1);
+                    ClippedImage.BeginAnimation(Canvas.TopProperty, animation.KeyFrames.Item2);
+
+                    _clippedImage1.BeginAnimation(Canvas.LeftProperty, animation1.KeyFrames.Item1);
+                    _clippedImage1.BeginAnimation(Canvas.TopProperty, animation1.KeyFrames.Item2);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.WriteLine("StartAnimAsyncException Genius " + animationType);
             }
-
         }
     }
 
@@ -357,6 +382,7 @@ GeniusAnimations.Idle9};
         readonly Dictionary<string, OverlayAnimation> _animations0;
         readonly Dictionary<string, OverlayAnimation> _animations1;
         readonly Dictionary<string, OverlayAnimation> _animations2;
+        readonly Dictionary<string, int> _animationLayers;
 
         public OverlayAnimations(int capacity)
         {
@@ -366,39 +392,44 @@ GeniusAnimations.Idle9};
                 new Dictionary<string, OverlayAnimation>(capacity);
             _animations2 =
                 new Dictionary<string, OverlayAnimation>(capacity);
+            _animationLayers = new Dictionary<string, int>(capacity);
 
         }
 
         public void Add(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> frames0)
         {
-            _animations0.Add(animName, new OverlayAnimation(animName, frames0));
+            _animations0.Add(animName, new OverlayAnimation(frames0));
         }
 
         public void Add1(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> frames0)
         {
-            _animations1.Add(animName, new OverlayAnimation(animName, frames0));
+            _animations1.Add(animName, new OverlayAnimation(frames0));
         }
 
         public void Add2(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> frames0)
         {
-            _animations2.Add(animName, new OverlayAnimation(animName, frames0));
+            _animations2.Add(animName, new OverlayAnimation(frames0));
         }
 
 
         public OverlayAnimation this[string animName] => _animations0[animName];
         public OverlayAnimation GetAnimation2(string animName) => _animations2[animName];
         public OverlayAnimation GetAnimation1(string animName) => _animations1[animName];
+        public int GetAnimationLayerCnt(string animName) => _animationLayers[animName];
+
+        internal void AddLayers(string name, int animationMaxLayers)
+        {
+            _animationLayers.Add(name, animationMaxLayers);
+        }
     }
 
     public class OverlayAnimation
     {
-        private string _animationName;
-        public Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> _keyFrames;
-        
-        public OverlayAnimation(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> xyKeyFrames)
+        public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> KeyFrames;
+
+        public OverlayAnimation(Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> xyKeyFrames)
         {
-            _animationName = animName;
-            _keyFrames = xyKeyFrames;
+            KeyFrames = xyKeyFrames;
         }
     }
 }

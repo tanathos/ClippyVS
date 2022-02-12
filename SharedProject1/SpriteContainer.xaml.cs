@@ -24,6 +24,7 @@ namespace Recoding.ClippyVSPackage
         private Clippy Clippy { get; set; }
         private Merlin Merlin { get; set; }
         private Genius Genius { get; set; }
+
         private bool _showMerlin;
         private bool _showGenius;
 
@@ -54,7 +55,7 @@ namespace Recoding.ClippyVSPackage
         /// <param name="showGenius">Indicates if Genius should be shown - dito</param>
         public SpriteContainer(AsyncPackage package, bool showMerlin = false, bool showGenius = false)
         {
-            this._package = package;
+            _package = package;
             _showMerlin = showMerlin;
             _showGenius = showGenius;
 
@@ -63,8 +64,8 @@ namespace Recoding.ClippyVSPackage
 
             InitializeComponent();
 
-            this.Owner = Application.Current.MainWindow;
-            this.Topmost = false;
+            Owner = Application.Current.MainWindow;
+            Topmost = false;
 
             #region Register event handlers
 
@@ -77,15 +78,13 @@ namespace Recoding.ClippyVSPackage
             _docEvents = dte.Events.DocumentEvents;
             _buildEvents = dte.Events.BuildEvents;
             _findEvents = dte.Events.FindEvents;
-            //_projectItemsEvents = dte.Events.Proj
 
             RegisterToDteEvents(dte);
 
-            this.Owner.LocationChanged += Owner_LocationChanged;
-            this.Owner.StateChanged += Owner_StateOrSizeChanged;
-            this.Owner.SizeChanged += Owner_StateOrSizeChanged;
-
-            this.LocationChanged += SpriteContainer_LocationChanged;
+            Owner.LocationChanged += Owner_LocationChanged;
+            Owner.StateChanged += Owner_StateOrSizeChanged;
+            Owner.SizeChanged += Owner_StateOrSizeChanged;
+            LocationChanged += SpriteContainer_LocationChanged;
 
             #endregion
 
@@ -94,30 +93,49 @@ namespace Recoding.ClippyVSPackage
             double? storedRelativeTop = null;
             double? storedRelativeLeft = null;
 
-            double relativeTop;
-            double relativeLeft;
-
             try
             {
                 if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeTop)))
-                    storedRelativeTop = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)));
+                    storedRelativeTop = double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeTop)));
 
                 if (_userSettingsStore.PropertyExists(Constants.SettingsCollectionPath, nameof(RelativeLeft)))
-                    storedRelativeLeft = Double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)));
+                    storedRelativeLeft = double.Parse(_userSettingsStore.GetString(Constants.SettingsCollectionPath, nameof(RelativeLeft)));
             }
             catch (ArgumentException ex)
             {
                 Console.WriteLine($@"SettingsStore Exception while reading: {ex.Message}");
             }
 
+            PlaceContainer(storedRelativeTop, storedRelativeLeft);
+
+            #endregion
+
+            //// /TEMP
+            if (_showMerlin)
+                ReviveMerlin();
+            else if (_showGenius)
+                ReviveGenius();
+            else
+                ReviveClippy();
+        }
+
+        /// <summary>
+        /// Places Assistant Window depending on screen size and saved settings
+        /// </summary>
+        /// <param name="storedRelativeTop">Stored top position from last time</param>
+        /// <param name="storedRelativeLeft">Stored Left Position from last time</param>
+        private void PlaceContainer(double? storedRelativeTop, double? storedRelativeLeft)
+        {
+            double relativeTop;
+            double relativeLeft;
             if (!storedRelativeTop.HasValue || !storedRelativeLeft.HasValue)
             {
                 RecalculateSpritePosition(out relativeTop, out relativeLeft, true);
                 storedRelativeTop = relativeTop;
                 storedRelativeLeft = relativeLeft;
 
-                this.RelativeLeft = relativeLeft;
-                this.RelativeTop = relativeTop;
+                RelativeLeft = relativeLeft;
+                RelativeTop = relativeTop;
 
                 StoreRelativeSpritePosition(storedRelativeTop.Value, storedRelativeLeft.Value);
             }
@@ -125,14 +143,14 @@ namespace Recoding.ClippyVSPackage
             {
                 RecalculateSpritePosition(out relativeTop, out relativeLeft);
 
-                this.RelativeLeft = relativeLeft;
-                this.RelativeTop = relativeTop;
+                RelativeLeft = relativeLeft;
+                RelativeTop = relativeTop;
             }
 
             double ownerTop = this.Owner.Top;
             double ownerLeft = this.Owner.Left;
 
-            if (this.Owner.WindowState == WindowState.Maximized)
+            if (Owner.WindowState == WindowState.Maximized)
             {
                 ownerTop = 0;
                 ownerLeft = 0;
@@ -140,18 +158,6 @@ namespace Recoding.ClippyVSPackage
 
             this.Top = ownerTop + storedRelativeTop.Value;
             this.Left = ownerLeft + storedRelativeLeft.Value;
-
-            #endregion
-
-
-            //// /TEMP
-
-            if (_showMerlin)
-                ReviveMerlin();
-            else if (_showGenius)
-                ReviveGenius();
-            else
-                ReviveClippy();
         }
 
         private void PopulateContextMenu()
@@ -456,7 +462,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
         private void cmdRandom_Click(object sender, RoutedEventArgs e)
         {
             Random rmd = new Random();
-            if (!_showMerlin)
+            if (!_showMerlin && !_showGenius)
             {
                 var randomInt = rmd.Next(0, Clippy.AllAnimations.Count);
 
@@ -570,29 +576,29 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
             double leftBoundScreenCorrection = ownerScreen.Bounds.X;
             double topBoundScreenCorrection = ownerScreen.Bounds.Y;
 
-            double ownerTop = this.Owner.Top;
-            double ownerLeft = this.Owner.Left;
+            var ownerTop = Owner.Top;
+            var ownerLeft = Owner.Left;
 
-            if (this.Owner.WindowState == WindowState.Maximized)
+            if (Owner.WindowState == WindowState.Maximized)
             {
                 ownerTop = 0 + topBoundScreenCorrection;
                 ownerLeft = 0 + leftBoundScreenCorrection;
             }
 
-            double ownerRight = this.Owner.ActualWidth + ownerLeft;
-            double ownerBottom = this.Owner.ActualHeight + ownerTop;
+            var ownerRight = Owner.ActualWidth + ownerLeft;
+            var ownerBottom = Owner.ActualHeight + ownerTop;
 
-            if (ownerTop > this.Top)
-                this.Top = ownerTop;
+            if (ownerTop > Top)
+                Top = ownerTop;
 
-            if (ownerLeft > this.Left)
-                this.Left = ownerLeft;
+            if (ownerLeft > Left)
+                Left = ownerLeft;
 
-            if (this.Left + this.ActualWidth > ownerRight)
-                this.Left = ownerRight - this.ActualWidth;
+            if (Left + ActualWidth > ownerRight)
+                Left = ownerRight - ActualWidth;
 
-            if (this.Top + this.ActualHeight > ownerBottom)
-                this.Top = ownerBottom - this.ActualHeight;
+            if (Top + ActualHeight > ownerBottom)
+                Top = ownerBottom - ActualHeight;
 
             if (!getDefaultPositioning)
             {
