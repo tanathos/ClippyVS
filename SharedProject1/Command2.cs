@@ -10,12 +10,12 @@ namespace SharedProject1
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = 4130;
+        private const int CommandId = 4130;
 
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
+        private static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
 
         /// <summary>
         /// VS Package that provides this command, not null.
@@ -30,7 +30,7 @@ namespace SharedProject1
         /// <param name="commandService">Command service to add command to, not null.</param>
         private Command2(AsyncPackage package, OleMenuCommandService commandService)
         {
-            this._package = package ?? throw new ArgumentNullException(nameof(package));
+            _package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
@@ -38,14 +38,6 @@ namespace SharedProject1
             commandService.AddCommand(menuItem);
         }
 
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
-        public static Command2 Instance
-        {
-            get;
-            private set;
-        }
 
         /// <summary>
         /// Gets the service provider from the owner package.
@@ -63,7 +55,7 @@ namespace SharedProject1
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            Instance = new Command2(package, commandService);
+            _ = new Command2(package, commandService);
         }
 
         /// <summary>

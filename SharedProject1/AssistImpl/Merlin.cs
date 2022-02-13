@@ -34,12 +34,12 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight { get; set; } = 128;
+        public static int ClipHeight { get; } = 128;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth { get; set; } = 128;
+        public static int ClipWidth { get; } = 128;
 
         /// <summary>
         /// The list of all the available animations
@@ -54,7 +54,7 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// All the animations that represents an Idle state
         /// </summary>
-        public static List<MerlinAnimations> IdleAnimations = new List<MerlinAnimations>() {
+        private static readonly List<MerlinAnimations> IdleAnimations = new List<MerlinAnimations>() {
             MerlinAnimations.MoveLeft,
 MerlinAnimations.Idle3_2,
 MerlinAnimations.Idle3_1,
@@ -140,7 +140,7 @@ MerlinAnimations.Idle1_2};
 
                 double timeOffset = 0;
 
-                foreach (Recoding.ClippyVSPackage.Configurations.Frame frame in animation.Frames)
+                foreach (var frame in animation.Frames)
                 {
                     if (frame.ImagesOffsets != null)
                     {
@@ -239,7 +239,7 @@ MerlinAnimations.Idle1_2};
                     ClippedImage.BeginAnimation(Canvas.TopProperty, animation.Item2);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.WriteLine("StartAnimAsyncException Merlin " + animationType);
             }

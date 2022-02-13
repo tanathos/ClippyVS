@@ -29,7 +29,7 @@ namespace Recoding.ClippyVSPackage
 
     public sealed class ClippyVisualStudioPackage : AsyncPackage
     {
-        public SpriteContainer SpriteContainer { get; set; }
+        private SpriteContainer SpriteContainer { get; set; }
 
         private IClippyVsSettings Settings { get; set; }
 
@@ -107,7 +107,7 @@ namespace Recoding.ClippyVSPackage
         }
 
 
-        internal void ReviveClippyCommand()
+        private void ReviveClippyCommand()
         {
             var visibleAssistants = Application.Current.Windows.OfType<SpriteContainer>();
             if (!visibleAssistants.Any())

@@ -11,7 +11,6 @@ using System.Windows.Threading;
 using System.Linq;
 using Recoding.ClippyVSPackage;
 using System.Diagnostics;
-using System.Windows.Media.Effects;
 using System.Windows.Resources;
 using Microsoft.VisualStudio.PlatformUI;
 using Newtonsoft.Json;
@@ -40,12 +39,12 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight { get; set; } = 93;
+        public static int ClipHeight { get; } = 93;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth { get; set; } = 124;
+        public static int ClipWidth { get; } = 124;
 
         /// <summary>
         /// The image that holds the sprite
@@ -298,11 +297,12 @@ GeniusAnimations.Idle9};
         {
             IsAnimating = false;
             ClippedImage.Visibility = Visibility.Visible;
-            (ClippedImage.Parent as Canvas).Visibility = Visibility.Visible;
+            if (ClippedImage.Parent is Canvas canvas)
+                canvas.Visibility = Visibility.Visible;
 
-            // Rememver to modify canvas, not image!
             _clippedImage1.Visibility = Visibility.Hidden;
-            (_clippedImage1.Parent as Canvas).Visibility=Visibility.Hidden;
+            if (_clippedImage1.Parent is Canvas canvas1)
+                canvas1.Visibility=Visibility.Hidden;
         }
 
         /// <summary>
@@ -360,8 +360,8 @@ GeniusAnimations.Idle9};
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     // well have to skip this (leave collapsed) if only one layer
                     if (animLayers > 1) {
-                    _clippedImage1.Visibility = Visibility.Visible;
-                    (_clippedImage1.Parent as Canvas).Visibility = Visibility.Visible;
+                        _clippedImage1.Visibility = Visibility.Visible;
+                        ((Canvas) _clippedImage1.Parent).Visibility = Visibility.Visible;
                     }
                     ClippedImage.BeginAnimation(Canvas.LeftProperty, animation.KeyFrames.Item1);
                     ClippedImage.BeginAnimation(Canvas.TopProperty, animation.KeyFrames.Item2);

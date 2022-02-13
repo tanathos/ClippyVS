@@ -1,8 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.Windows.Forms;
 using Task = System.Threading.Tasks.Task;
 
 namespace Recoding.ClippyVSPackage
@@ -15,26 +13,17 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = 4131;
+        private const int CommandId = 4131;
 
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
+        private static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
 
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
         private readonly AsyncPackage _package;
-
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
-        public static CommandGenius Instance
-        {
-            get;
-            private set;
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Command1"/> class.
@@ -62,8 +51,7 @@ namespace Recoding.ClippyVSPackage
             //await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            
-            Instance = new CommandGenius(commandService, package);
+            _ = new CommandGenius(commandService, package);
         }
 
         /// <summary>

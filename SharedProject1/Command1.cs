@@ -15,21 +15,12 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = 4129;
+        private const int CommandId = 4129;
 
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
-
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
-        public static Command1 Instance
-        {
-            get;
-            private set;
-        }
+        private static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Command1"/> class.
@@ -56,7 +47,7 @@ namespace Recoding.ClippyVSPackage
             //await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            Instance = new Command1(commandService);
+            _ = new Command1(commandService);
         }
 
         /// <summary>

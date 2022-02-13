@@ -32,15 +32,14 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// When is true it means an animation is actually running
         /// </summary>
-        public bool IsAnimating { get; set; }
-
+        protected bool IsAnimating { get; set; }
 
         /// <summary>
         /// Reads the content of a stream into a string
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static string StreamToString(Stream stream)
+        protected static string StreamToString(Stream stream)
         {
             string streamString;
             stream.Position = 0;
@@ -52,9 +51,8 @@ namespace Recoding.ClippyVSPackage
         }
 
         public void Dispose()
-        { 
-            if (WpfAnimationsDispatcher != null)    
-                WpfAnimationsDispatcher.Stop();
+        {
+            WpfAnimationsDispatcher?.Stop();
         }
     }
 }

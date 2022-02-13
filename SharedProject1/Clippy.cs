@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Recoding.ClippyVSPackage.Configurations;
+﻿using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -33,12 +33,12 @@ namespace Recoding.ClippyVSPackage
         /// <summary>
         /// The height of the frame
         /// </summary>
-        public static int ClipHeight { get; set; } = 93;
+        public static int ClipHeight => 93;
 
         /// <summary>
         /// The with of the frame
         /// </summary>
-        public static int ClipWidth { get; set; } = 124;
+        public static int ClipWidth => 124;
 
         /// <summary>
         /// The list of all the available animations
@@ -74,7 +74,7 @@ namespace Recoding.ClippyVSPackage
 #endif
 #if Dev22
 #endif
-            this.Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
+            Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
 
             ClippedImage = new Image
             {
@@ -90,8 +90,6 @@ namespace Recoding.ClippyVSPackage
             if (_animations == null)
                 RegisterAnimations();
 
-
-            //XX Requires testing..
             AllAnimations = new List<ClippyAnimation>();
             var values = Enum.GetValues(typeof(ClippyAnimation));
             AllAnimations.AddRange(values.Cast<ClippyAnimation>());
@@ -161,14 +159,8 @@ namespace Recoding.ClippyVSPackage
                 _animations.Add(animation.Name,
                     new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation,
                         yDoubleAnimation));
-                xDoubleAnimation.Changed += XDoubleAnimation_Changed;
                 xDoubleAnimation.Completed += xDoubleAnimation_Completed;
             }
-        }
-
-        private void XDoubleAnimation_Changed(object sender, EventArgs e)
-        {
-            //       Debug.WriteLine("Clippy: Animation changing");
         }
 
         /// <summary>
@@ -205,7 +197,7 @@ namespace Recoding.ClippyVSPackage
 
         public void StartAnimation(ClippyAnimation animations, bool byPassCurrentAnimation = false)
         {
-            ThreadHelper.JoinableTaskFactory.Run(
+            Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(
                 async delegate
                 {
                     await StartAnimationAsync(animations, byPassCurrentAnimation);
@@ -217,12 +209,12 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         /// <param name="animationType"></param>
         /// <param name="byPassCurrentAnimation"></param>
-        public async System.Threading.Tasks.Task StartAnimationAsync(ClippyAnimation animationType, bool byPassCurrentAnimation = false)
+        public async Task StartAnimationAsync(ClippyAnimation animationType, bool byPassCurrentAnimation = false)
         {
             if (!IsAnimating || byPassCurrentAnimation)
             {
                 IsAnimating = true;
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 if (_animations.ContainsKey(animationType.ToString()))
                 {
                     ClippedImage.BeginAnimation(Canvas.LeftProperty, _animations[animationType.ToString()].Item1);

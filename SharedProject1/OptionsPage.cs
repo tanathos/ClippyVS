@@ -14,7 +14,7 @@ namespace Recoding.ClippyVSPackage
         [Category("General")]
         [Description("If true shows Clippy at the VS startup")]
         [DisplayName("Show at startup")]
-        public bool ShowAtStartup { get; set; }
+        private bool ShowAtStartup { get; set; }
 
         public OptionsPage()
         {
