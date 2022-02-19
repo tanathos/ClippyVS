@@ -3,7 +3,7 @@ ClippyVS
 
 The legend is back, in Visual Studio!
 
-ClippyVS is a V2019 adornment [extension](https://marketplace.visualstudio.com/items?itemName=ErosFratini.ClippyVS) which reacts to some actions you're making in the IDE (opening projects, saving, building, closing files, etc...). Now also available for Visual Studio 2022.
+ClippyVS is a VS 2019 and VS 2022 adornment [extension](https://marketplace.visualstudio.com/items?itemName=ErosFratini.ClippyVS) which reacts to some actions you're making in the IDE (opening projects, saving, building, closing files, etc...). Now also available for Visual Studio 2022.
 
 In the future it'll have to speak with the old style message bubbles **PULL REQUESTS ARE WELCOME**
 
