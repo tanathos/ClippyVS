@@ -30,7 +30,6 @@ namespace Recoding.ClippyVSPackage
     public sealed class ClippyVisualStudioPackage : AsyncPackage
     {
         private SpriteContainer SpriteContainer { get; set; }
-
         private IClippyVsSettings Settings { get; set; }
 
         /// <summary>
@@ -42,8 +41,8 @@ namespace Recoding.ClippyVSPackage
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
 
-        #region Package Members
 
+        #region Package Members
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -122,6 +121,7 @@ namespace Recoding.ClippyVSPackage
             SpriteContainer.ReviveClippy();
         }
 
+
         internal void ReviveGeniusCommand()
         {
             var visibleAssistants = Application.Current.Windows.OfType<SpriteContainer>();
@@ -169,8 +169,8 @@ namespace Recoding.ClippyVSPackage
                 MessageBox.Show("Application Exception occured. Closing." + Environment.NewLine + ex.Message);
             }
         }
-
         #endregion
+
 
         /// <summary>
         /// This function is the callback used to execute a command when the a menu item is clicked.

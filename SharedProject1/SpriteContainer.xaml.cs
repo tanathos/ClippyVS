@@ -24,7 +24,6 @@ namespace Recoding.ClippyVSPackage
         private Clippy Clippy { get; set; }
         private Merlin Merlin { get; set; }
         private Genius Genius { get; set; }
-
         private bool _showMerlin;
         private bool _showGenius;
 
@@ -39,7 +38,6 @@ namespace Recoding.ClippyVSPackage
         private readonly WritableSettingsStore _userSettingsStore;
 
         private double RelativeLeft { get; set; }
-
         private double RelativeTop { get; set; }
 
         private readonly DocumentEvents _docEvents;
@@ -68,7 +66,6 @@ namespace Recoding.ClippyVSPackage
             Topmost = false;
 
             #region Register event handlers
-
             ThreadHelper.ThrowIfNotOnUIThread();
             //IVsActivityLog activityLog = package.GetServiceAsync(typeof(SVsActivityLog))
             //    .ConfigureAwait(true).GetAwaiter().GetResult() as IVsActivityLog;
@@ -85,11 +82,10 @@ namespace Recoding.ClippyVSPackage
             Owner.StateChanged += Owner_StateOrSizeChanged;
             Owner.SizeChanged += Owner_StateOrSizeChanged;
             LocationChanged += SpriteContainer_LocationChanged;
-
             #endregion
+            
 
             #region -- Restore Sprite postion --
-
             double? storedRelativeTop = null;
             double? storedRelativeLeft = null;
 
@@ -107,10 +103,8 @@ namespace Recoding.ClippyVSPackage
             }
 
             PlaceContainer(storedRelativeTop, storedRelativeLeft);
-
             #endregion
 
-            //// /TEMP
             if (_showMerlin)
                 ReviveMerlin();
             else if (_showGenius)
@@ -118,6 +112,7 @@ namespace Recoding.ClippyVSPackage
             else
                 ReviveClippy();
         }
+
 
         /// <summary>
         /// Places Assistant Window depending on screen size and saved settings
@@ -160,11 +155,11 @@ namespace Recoding.ClippyVSPackage
             this.Left = ownerLeft + storedRelativeLeft.Value;
         }
 
+
         private void PopulateContextMenu()
         {
-
 #if DEBUG
-var values = Enum.GetValues(typeof(ClippyAnimation));
+            var values = Enum.GetValues(typeof(ClippyAnimation));
             if (_showMerlin)
             {
                 values = Enum.GetValues(typeof(MerlinAnimations));
@@ -173,6 +168,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
             {
                 values = Enum.GetValues(typeof(GeniusAnimations));
             }
+            
             //// TEMP: create a voice for each animation in the context menu
             var pMenu = (ContextMenu)this.Resources["CmButton"];
             pMenu.Items.Clear();
@@ -188,8 +184,8 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
                 pMenu.Items.Add(menuItem);
             }
 #endif
-
         }
+
 
         public void ReviveClippy()
         {
@@ -434,14 +430,15 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
                 this.DragMove();
         }
 
+
         private void Grid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (this.FindResource("CmButton") is ContextMenu cm)
-            {
-                cm.PlacementTarget = sender as Button;
-                cm.IsOpen = true;
-            }
+            if (!(this.FindResource("CmButton") is ContextMenu cm)) return;
+
+            cm.PlacementTarget = sender as Button;
+            cm.IsOpen = true;
         }
+
 
         private async void cmdClose_Click(object sender, RoutedEventArgs e)
         {
@@ -481,6 +478,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
                 Merlin.StartAnimation(Merlin.AllAnimations[randomInt]);
             }
         }
+
 
         private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
@@ -528,6 +526,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
             }
         }
 
+
         private void ClippySpriteContainer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (IsVisible)
@@ -546,6 +545,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
                 }
             }
         }
+
 
         private void SpriteContainer_LocationChanged(object sender, EventArgs e)
         {
@@ -625,6 +625,7 @@ var values = Enum.GetValues(typeof(ClippyAnimation));
                 }
             }
         }
+
 
         /// <summary>
         /// 

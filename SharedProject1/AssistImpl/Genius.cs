@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.PlatformUI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Recoding.ClippyVSPackage.Configurations.Legacy;
+using Frame = Recoding.ClippyVSPackage.Configurations.Legacy.Frame;
 
 namespace SharedProject1.AssistImpl
 {
@@ -59,7 +60,7 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// The list of couples of Columns/Rows double animations , supports no overlays
         /// </summary>
-        private static OverlayAnimations _animations;
+        private static LayeredAnimations _animations;
 
         /// <summary>
         /// All the animations that represents an Idle state
@@ -143,111 +144,143 @@ GeniusAnimations.Idle9};
             var storedAnimations = ParseAnimDescriptions();
             if (storedAnimations == null) return;
 
-            _animations = new OverlayAnimations(storedAnimations.Count);
+            _animations = new LayeredAnimations(storedAnimations.Count);
 
             foreach (var animation in storedAnimations)
             {
-                var xDoubleAnimation = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
+                RegisterAnimation(animation);
+            }
+        }
 
-                var yDoubleAnimation = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
-                var xDoubleAnimation1 = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
+        private void RegisterAnimation(GeniusSingleAnimation animation)
+        {
+            var xDoubleAnimation = new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            var yDoubleAnimation = new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            var visibility0 = new ObjectAnimationUsingKeyFrames();
 
-                var yDoubleAnimation1 = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
-                var xDoubleAnimation2 = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
+            var xDoubleAnimation1 = new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            var yDoubleAnimation1 = new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            var visibility1 = new ObjectAnimationUsingKeyFrames();
 
-                var yDoubleAnimation2 = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
+            var xDoubleAnimation2 = new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            var yDoubleAnimation2 = new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            var visibility2 = new ObjectAnimationUsingKeyFrames();
 
-                double timeOffset = 0;
+            double timeOffset = 0;
+            var frameIndex = 0;
+            var animationMaxLayers = 0;
 
-                var frameIndex = 0;
-                var animationMaxLayers = 0;
-                foreach (var frame in animation.Frames)
+            foreach (var frame in animation.Frames)
+            {
+                animationMaxLayers = RegisterFrame(frame, animationMaxLayers, xDoubleAnimation, yDoubleAnimation, xDoubleAnimation1, yDoubleAnimation1, xDoubleAnimation2, yDoubleAnimation2, visibility0, visibility1, visibility2, ref timeOffset, ref frameIndex);
+            }
+
+            _animations.Add(animation.Name,
+                new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation),
+                visibility0,
+                new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation1, yDoubleAnimation1),
+                visibility1,
+                animationMaxLayers);
+
+            Debug.WriteLine("Added Genius Anim {0}" + animation.Name);
+            Debug.WriteLine("...  Frame Count: " + xDoubleAnimation.KeyFrames.Count + " - " +
+                            yDoubleAnimation.KeyFrames.Count);
+            Debug.WriteLine($"Animation {animation.Name} has {animationMaxLayers} layers");
+
+            xDoubleAnimation.Completed += XDoubleAnimation_Completed;
+        }
+
+        private static int RegisterFrame(Frame frame, int animationMaxLayers, DoubleAnimationUsingKeyFrames xDoubleAnimation,
+            DoubleAnimationUsingKeyFrames yDoubleAnimation, DoubleAnimationUsingKeyFrames xDoubleAnimation1,
+            DoubleAnimationUsingKeyFrames yDoubleAnimation1, DoubleAnimationUsingKeyFrames xDoubleAnimation2,
+            DoubleAnimationUsingKeyFrames yDoubleAnimation2, ObjectAnimationUsingKeyFrames visibility0, ObjectAnimationUsingKeyFrames visibility1, ObjectAnimationUsingKeyFrames visibility2, ref double timeOffset, ref int frameIndex)
+        {
+            if (frame.ImagesOffsets != null)
+            {
+                if (frame.ImagesOffsets.Count > animationMaxLayers)
                 {
-                    if (frame.ImagesOffsets != null)
+                    animationMaxLayers = frame.ImagesOffsets.Count;
+                }
+
+                for (var layerNum = 0; layerNum < frame.ImagesOffsets.Count; layerNum++)
+                {
+                    Debug.WriteLine("Processing Overlay " + layerNum);
+
+                    // Prepare Key frame for all potential layers (max 3)
+                    xDoubleAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame());
+                    yDoubleAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame());
+                    visibility0.KeyFrames.Add(new DiscreteObjectKeyFrame(0.0));
+                    xDoubleAnimation1.KeyFrames.Add(new DiscreteDoubleKeyFrame());
+                    yDoubleAnimation1.KeyFrames.Add(new DiscreteDoubleKeyFrame());
+                    visibility1.KeyFrames.Add(new DiscreteObjectKeyFrame(0.0));
+                    xDoubleAnimation2.KeyFrames.Add(new DiscreteDoubleKeyFrame());
+                    yDoubleAnimation2.KeyFrames.Add(new DiscreteDoubleKeyFrame());
+                    visibility2.KeyFrames.Add(new DiscreteObjectKeyFrame(0.0));
+
+                    //Overlay is actually - layers - displayed at the same time...
+                    var lastCol = frame.ImagesOffsets[layerNum][0];
+                    var lastRow = frame.ImagesOffsets[layerNum][1];
+
+                    // X and Y
+                    var frameKeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset));
+                    var xKeyFrame = new DiscreteDoubleKeyFrame(lastCol * -1,
+                        frameKeyTime);
+                    var yKeyFrame = new DiscreteDoubleKeyFrame(lastRow * -1,
+                        frameKeyTime);
+
+                    switch (layerNum)
                     {
-                        var overlays = frame.ImagesOffsets.Count;
-                        if (overlays > animationMaxLayers)
-                        {
-                            animationMaxLayers = overlays;
-                        }
-
-                        for (var layerNum = 0; layerNum < overlays; layerNum++)
-                        {
-                            Debug.WriteLine("Processing Overlay " + layerNum);
-
-                            // Prepare Key frame for all potential layers (max 3)
-                            xDoubleAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame());
-                            yDoubleAnimation.KeyFrames.Add(new DiscreteDoubleKeyFrame());
-                            xDoubleAnimation1.KeyFrames.Add(new DiscreteDoubleKeyFrame());
-                            yDoubleAnimation1.KeyFrames.Add(new DiscreteDoubleKeyFrame());
-                            xDoubleAnimation2.KeyFrames.Add(new DiscreteDoubleKeyFrame());
-                            yDoubleAnimation2.KeyFrames.Add(new DiscreteDoubleKeyFrame());
-
-                            //Overlay is actually - layers - displayed at the same time...
-                            var lastCol = frame.ImagesOffsets[layerNum][0];
-                            var lastRow = frame.ImagesOffsets[layerNum][1];
-
-                            // X and Y
-                            var xKeyFrame = new DiscreteDoubleKeyFrame(lastCol * -1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-                            var yKeyFrame = new DiscreteDoubleKeyFrame(lastRow * -1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                            switch (layerNum)
-                            {
-                                case 0:
-                                    xDoubleAnimation.KeyFrames.Insert(frameIndex, xKeyFrame);
-                                    yDoubleAnimation.KeyFrames.Insert(frameIndex, yKeyFrame);
-                                    break;
-                                case 1:
-                                    xDoubleAnimation1.KeyFrames.Insert(frameIndex, xKeyFrame);
-                                    yDoubleAnimation1.KeyFrames.Insert(frameIndex, yKeyFrame);
-                                    break;
-                                case 2:
-                                    xDoubleAnimation2.KeyFrames.Insert(frameIndex, xKeyFrame);
-                                    yDoubleAnimation2.KeyFrames.Insert(frameIndex, yKeyFrame);
-                                    break;
-                            }
-                        }
-
-                        //timeOffset += ((double)frame.Duration / 1000 * 4);
-                        timeOffset += ((double)frame.Duration / 1000);
-                        frameIndex++;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("ImageOffsets was null");
+                        case 0:
+                            xDoubleAnimation.KeyFrames.Insert(frameIndex, xKeyFrame);
+                            yDoubleAnimation.KeyFrames.Insert(frameIndex, yKeyFrame);
+                            visibility0.KeyFrames.Insert(frameIndex, new DiscreteObjectKeyFrame(1.0, frameKeyTime));
+                            break;
+                        case 1:
+                            xDoubleAnimation1.KeyFrames.Insert(frameIndex, xKeyFrame);
+                            yDoubleAnimation1.KeyFrames.Insert(frameIndex, yKeyFrame);
+                            visibility1.KeyFrames.Insert(frameIndex, new DiscreteObjectKeyFrame(1.0, frameKeyTime));
+                            break;
+                        case 2:
+                            xDoubleAnimation2.KeyFrames.Insert(frameIndex, xKeyFrame);
+                            yDoubleAnimation2.KeyFrames.Insert(frameIndex, yKeyFrame);
+                            visibility2.KeyFrames.Insert(frameIndex, new DiscreteObjectKeyFrame(1.0, frameKeyTime));
+                            break;
                     }
                 }
 
-                _animations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
-                _animations.Add1(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation1, yDoubleAnimation1));
-                _animations.Add2(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation2, yDoubleAnimation2));
-                _animations.AddLayers(animation.Name, animationMaxLayers);
-
-                Debug.WriteLine("Added Genius Anim {0}" + animation.Name);
-                Debug.WriteLine("...  Frame Count: " + xDoubleAnimation.KeyFrames.Count + " - " +
-                                yDoubleAnimation.KeyFrames.Count);
-                Debug.WriteLine($"Animation {animation.Name} has {animationMaxLayers} layers");
-
-                xDoubleAnimation.Completed += XDoubleAnimation_Completed;
+                //timeOffset += ((double)frame.Duration / 1000 * 4);
+                timeOffset += ((double) frame.Duration / 1000);
+                frameIndex++;
             }
+            else
+            {
+                Debug.WriteLine("ImageOffsets was null");
+            }
+
+            return animationMaxLayers;
+        }
+
+        private void YKeyFrame_Changed(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Keyframe changed!");
         }
 
         private static List<GeniusSingleAnimation> ParseAnimDescriptions()
@@ -351,10 +384,9 @@ GeniusAnimations.Idle9};
                     if (animation == null) return;
 
                     Debug.WriteLine("Triggering Genius " + animationType);
-                    Debug.WriteLine(animation.KeyFrames.Item1.ToString() + animation.KeyFrames.Item2);
+                    Debug.WriteLine(animation.Layer0.Item1.ToString() + animation.Layer0.Item2);
 
-                    var animation1 = _animations.GetAnimation1(animationType.ToString());
-                    var animLayers = _animations.GetAnimationLayerCnt(animationType.ToString());
+                    var animLayers = animation.MaxLayers;
                     IsAnimating = true;
 
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -363,11 +395,13 @@ GeniusAnimations.Idle9};
                         _clippedImage1.Visibility = Visibility.Visible;
                         ((Canvas) _clippedImage1.Parent).Visibility = Visibility.Visible;
                     }
-                    ClippedImage.BeginAnimation(Canvas.LeftProperty, animation.KeyFrames.Item1);
-                    ClippedImage.BeginAnimation(Canvas.TopProperty, animation.KeyFrames.Item2);
+                    ClippedImage.BeginAnimation(Canvas.LeftProperty, animation.Layer0.Item1);
+                    ClippedImage.BeginAnimation(Canvas.TopProperty, animation.Layer0.Item2);
+                    
 
-                    _clippedImage1.BeginAnimation(Canvas.LeftProperty, animation1.KeyFrames.Item1);
-                    _clippedImage1.BeginAnimation(Canvas.TopProperty, animation1.KeyFrames.Item2);
+                    _clippedImage1.BeginAnimation(Canvas.LeftProperty, animation.Layer1.Item1);
+                    _clippedImage1.BeginAnimation(Canvas.TopProperty, animation.Layer1.Item2);
+                    _clippedImage1.BeginAnimation(Image.OpacityProperty, animation.Visibility1);
                 }
             }
             catch (Exception)
@@ -377,59 +411,64 @@ GeniusAnimations.Idle9};
         }
     }
 
-    public class OverlayAnimations
+    public class LayeredAnimation
     {
-        readonly Dictionary<string, OverlayAnimation> _animations0;
-        readonly Dictionary<string, OverlayAnimation> _animations1;
-        readonly Dictionary<string, OverlayAnimation> _animations2;
-        readonly Dictionary<string, int> _animationLayers;
+        public readonly string Name;
+        public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> Layer0;
+        public readonly ObjectAnimationUsingKeyFrames Visibility0;
+        public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> Layer1;
+        public readonly ObjectAnimationUsingKeyFrames Visibility1;
+        public readonly int MaxLayers;
 
-        public OverlayAnimations(int capacity)
+        public LayeredAnimation(string name, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer0,
+            ObjectAnimationUsingKeyFrames visibility0, 
+            Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer1,
+            ObjectAnimationUsingKeyFrames visibility1,
+            int animMaxLayers)
         {
-            _animations0 =
-                new Dictionary<string, OverlayAnimation>(capacity);
-            _animations1 =
-                new Dictionary<string, OverlayAnimation>(capacity);
-            _animations2 =
-                new Dictionary<string, OverlayAnimation>(capacity);
-            _animationLayers = new Dictionary<string, int>(capacity);
-
-        }
-
-        public void Add(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> frames0)
-        {
-            _animations0.Add(animName, new OverlayAnimation(frames0));
-        }
-
-        public void Add1(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> frames0)
-        {
-            _animations1.Add(animName, new OverlayAnimation(frames0));
-        }
-
-        public void Add2(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> frames0)
-        {
-            _animations2.Add(animName, new OverlayAnimation(frames0));
-        }
-
-
-        public OverlayAnimation this[string animName] => _animations0[animName];
-        public OverlayAnimation GetAnimation2(string animName) => _animations2[animName];
-        public OverlayAnimation GetAnimation1(string animName) => _animations1[animName];
-        public int GetAnimationLayerCnt(string animName) => _animationLayers[animName];
-
-        internal void AddLayers(string name, int animationMaxLayers)
-        {
-            _animationLayers.Add(name, animationMaxLayers);
+            Name = name;
+            Layer0 = layer0;
+            Visibility0 = visibility0;
+            Layer1 = layer1;
+            Visibility1 = visibility1;
+            MaxLayers = animMaxLayers;
+            
         }
     }
 
-    public class OverlayAnimation
+    public class LayeredAnimations
     {
-        public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> KeyFrames;
+        private readonly List<LayeredAnimation> _animations;
 
-        public OverlayAnimation(Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> xyKeyFrames)
+        public LayeredAnimations(int capacity)
         {
-            KeyFrames = xyKeyFrames;
+            _animations = new List<LayeredAnimation>(capacity);
+        }
+
+        public void Add(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer0, ObjectAnimationUsingKeyFrames visibility0,
+            Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer1, ObjectAnimationUsingKeyFrames visibility1,
+            int animMaxLayers)
+        {
+            _animations.Add(new LayeredAnimation(animName, layer0, visibility0, layer1, visibility1, animMaxLayers));
+            Debug.WriteLine("Added animation");
+        }
+
+        public LayeredAnimation this[string animName]
+        {
+            get
+            {
+                return _animations.First(animation => animation.Name.Equals(animName));
+            }
         }
     }
+
+    //public class OverlayAnimationFrames
+    //{
+    //    public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> KeyFrames;
+
+    //    public OverlayAnimationFrames(Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> xyKeyFrames)
+    //    {
+    //        KeyFrames = xyKeyFrames;
+    //    }
+    //}
 }
