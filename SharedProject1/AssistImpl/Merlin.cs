@@ -2,11 +2,8 @@
 using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Linq;
 using Recoding.ClippyVSPackage;
@@ -44,7 +41,7 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        public List<MerlinAnimations> AllAnimations { get; } = new List<MerlinAnimations>();
+        public List<MerlinAnimations> AllAnimations { get; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations

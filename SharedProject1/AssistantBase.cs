@@ -1,12 +1,7 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Recoding.ClippyVSPackage;
-using Recoding.ClippyVSPackage.Configurations;
-using SharedProject1.AssistImpl;
+﻿using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -65,11 +60,12 @@ namespace Recoding.ClippyVSPackage
             WpfAnimationsDispatcher?.Stop();
         }
 
-        protected void InitAssistant(Panel canvas, string SpriteResourceUri)
+        protected void InitAssistant(Panel canvas, string spriteResourceUri)
         {
-            var spResUri = SpriteResourceUri;
+            // ReSharper disable once RedundantAssignment
+            var spResUri = spriteResourceUri;
 #if Dev19
-            spResUri = SpriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
+            spResUri = spriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
 #endif
 #if Dev22
 #endif
@@ -85,13 +81,11 @@ namespace Recoding.ClippyVSPackage
 
             canvas.Children.Clear();
             canvas.Children.Add(ClippedImage);
-
-
         }
 
-        protected void RegisterAnimationsImpl(string AnimationsResourceUri, ref Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> animations, EventHandler XDoubleAnimation_Completed, int ClipWidth, int ClipHeight)
+        protected void RegisterAnimationsImpl(string animationsResourceUri, ref Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> animations, EventHandler xDoubleAnimationCompleted, int clipWidth, int clipHeight)
         {
-            var spResUri = AnimationsResourceUri;
+            var spResUri = animationsResourceUri;
 
 #if Dev19
             spResUri = spResUri.Replace("ClippyVs2022", "ClippyVSPackage");
@@ -133,10 +127,10 @@ namespace Recoding.ClippyVSPackage
                         var lastRow = frame.ImagesOffsets.Row;
 
                         // X
-                        var xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                        var xKeyFrame = new DiscreteDoubleKeyFrame(clipWidth * -lastCol, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                         // Y
-                        var yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
+                        var yKeyFrame = new DiscreteDoubleKeyFrame(clipHeight * -lastRow, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
 
                         timeOffset += ((double)frame.Duration / 1000);
                         xDoubleAnimation.KeyFrames.Add(xKeyFrame);
@@ -145,7 +139,7 @@ namespace Recoding.ClippyVSPackage
                 }
 
                 animations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
-                xDoubleAnimation.Completed += XDoubleAnimation_Completed;
+                xDoubleAnimation.Completed += xDoubleAnimationCompleted;
             }
         }
     }

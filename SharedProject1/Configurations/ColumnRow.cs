@@ -3,6 +3,7 @@
     /// <summary>
     /// Coordinates set of a frame in the animation
     /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ColumnRow
     {
         /// <summary>
