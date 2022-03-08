@@ -83,20 +83,7 @@ GeniusAnimations.Idle9};
         /// </summary>
         public Genius(Panel canvas, Panel canvas1)
         {
-            // ReSharper disable once RedundantAssignment
-            var spResUri = SpriteResourceUri;
-#if Dev19
-            spResUri = SpriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
-#endif
-#if Dev22
-#endif
-            Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
-
-            ClippedImage = new Image
-            {
-                Source = Sprite,
-                Stretch = Stretch.None
-            };
+            InitAssistant(canvas, SpriteResourceUri);
 
             _clippedImage1 = new Image
             {

@@ -68,24 +68,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         public Clippy(Canvas canvas)
         {
-            var spResUri = SpriteResourceUri;
-#if Dev19
-            spResUri = SpriteResourceUri.Replace("ClippyVs2022", "ClippyVSPackage");
-#endif
-#if Dev22
-#endif
-            Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
-
-            ClippedImage = new Image
-            {
-                Source = Sprite,
-                Stretch = Stretch.None
-            };
-
-            if (canvas == null) return;
-
-            canvas.Children.Clear();
-            canvas.Children.Add(ClippedImage);
+            InitAssistant(canvas, SpriteResourceUri);
 
             if (_animations == null)
                 RegisterAnimations();
@@ -101,66 +84,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void RegisterAnimations()
         {
-            var spResUri = AnimationsResourceUri;
-
-#if Dev19
-            spResUri = spResUri.Replace("ClippyVs2022", "ClippyVSPackage");
-#endif
-            var uri = new Uri(spResUri, UriKind.RelativeOrAbsolute);
-
-            var info = Application.GetResourceStream(uri);
-
-            if (info == null) return;
-
-            var storedAnimations =
-                Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippySingleAnimation>>(StreamToString(info.Stream));
-
-            _animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
-
-            if (storedAnimations == null) return;
-
-            foreach (var animation in storedAnimations)
-            {
-                var xDoubleAnimation = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
-
-                var yDoubleAnimation = new DoubleAnimationUsingKeyFrames
-                {
-                    FillBehavior = FillBehavior.HoldEnd
-                };
-
-                var lastCol = 0;
-                var lastRow = 0;
-                double timeOffset = 0;
-
-                foreach (var frame in animation.Frames)
-                {
-                    if (frame.ImagesOffsets != null)
-                    {
-                        lastCol = frame.ImagesOffsets.Column;
-                        lastRow = frame.ImagesOffsets.Row;
-                    }
-
-                    // X
-                    var xKeyFrame = new DiscreteDoubleKeyFrame(ClipWidth * -lastCol,
-                        KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                    // Y
-                    var yKeyFrame = new DiscreteDoubleKeyFrame(ClipHeight * -lastRow,
-                        KeyTime.FromTimeSpan(TimeSpan.FromSeconds(timeOffset)));
-
-                    timeOffset += ((double)frame.Duration / 1000);
-                    xDoubleAnimation.KeyFrames.Add(xKeyFrame);
-                    yDoubleAnimation.KeyFrames.Add(yKeyFrame);
-                }
-
-                _animations.Add(animation.Name,
-                    new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation,
-                        yDoubleAnimation));
-                xDoubleAnimation.Completed += xDoubleAnimation_Completed;
-            }
+            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, xDoubleAnimation_Completed, ClipWidth, ClipHeight);
         }
 
         /// <summary>
