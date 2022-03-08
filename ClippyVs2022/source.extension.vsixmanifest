@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ClippyVs2022.647af97f-6dbf-45b9-bea9-d8110c081504" Version="0.8" Language="en-US" Publisher="Eros Fratini and Denis Abt" />
+        <Identity Id="ClippyVs2022.647af97f-6dbf-45b9-bea9-d8110c081504" Version="1.3" Language="en-US" Publisher="Eros Fratini and Denis Abt" />
         <DisplayName>ClippyVs</DisplayName>
         <Description xml:space="preserve">Clippy is back!
 Thanks To Eros Fratini for the initial work and heavy lifting - I've migrated this to be compatible with Visual Studio 2019 &amp; 2022 editions.
