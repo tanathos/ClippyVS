@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using System.Linq;
 using Recoding.ClippyVSPackage;
 using System.Diagnostics;
+using SharedProject1.Configurations;
 
 namespace SharedProject1.AssistImpl
 {

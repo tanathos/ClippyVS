@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Recoding.ClippyVSPackage.Configurations.Legacy;
 using Frame = Recoding.ClippyVSPackage.Configurations.Legacy.Frame;
+using SharedProject1.Configurations;
 
 namespace SharedProject1.AssistImpl
 {

@@ -84,7 +84,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void RegisterAnimations()
         {
-            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, xDoubleAnimation_Completed, ClipWidth, ClipHeight);
+            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void xDoubleAnimation_Completed(object sender, EventArgs e)
+        void XDoubleAnimation_Completed(object sender, EventArgs e)
         {
             IsAnimating = false;
         }

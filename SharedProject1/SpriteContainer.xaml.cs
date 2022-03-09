@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Settings;
 using Recoding.ClippyVSPackage.Configurations;
 using SharedProject1.AssistImpl;
+using SharedProject1.Configurations;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -43,6 +44,8 @@ namespace Recoding.ClippyVSPackage
         private readonly DocumentEvents _docEvents;
         private readonly BuildEvents _buildEvents;
         private readonly FindEvents _findEvents;
+        private readonly ProjectItemsEvents _projItemsEvents;
+        private readonly DebuggerEvents _debuggerEvents;
         private ProjectItemsEvents _csharpProjectItemsEvents;
 
         /// <summary>
@@ -75,6 +78,9 @@ namespace Recoding.ClippyVSPackage
             _docEvents = dte.Events.DocumentEvents;
             _buildEvents = dte.Events.BuildEvents;
             _findEvents = dte.Events.FindEvents;
+            _projItemsEvents = dte.Events.MiscFilesEvents;
+            _debuggerEvents = dte.Events.DebuggerEvents;
+            //dte.Events.
 
             RegisterToDteEvents(dte);
 
@@ -180,7 +186,7 @@ namespace Recoding.ClippyVSPackage
                     Header = val.ToString(),
                     Name = "cmd" + val
                 }; 
-                menuItem.Click += cmdTestAnimation_Click;
+                menuItem.Click += CmdTestAnimation_Click;
                 pMenu.Items.Add(menuItem);
             }
 #endif
@@ -266,18 +272,19 @@ namespace Recoding.ClippyVSPackage
 
             _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
             _buildEvents.OnBuildDone += BuildEvents_OnBuildDone;
-
             _findEvents.FindDone += FindEventsClass_FindDone;
             try
             {
                 // RIP Project Events - is there a replacement ? Please Check...
-                this._csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as ProjectItemsEvents;
-                if (this._csharpProjectItemsEvents == null)
+                _csharpProjectItemsEvents = dte.Events.GetObject("CSharpProjectItemsEvents") as ProjectItemsEvents;
+                if (_csharpProjectItemsEvents == null)
+                {
                     return;
+                }
 
-                this._csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
-                this._csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
-                this._csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
+                _csharpProjectItemsEvents.ItemAdded += ProjectItemsEvents_ItemAdded;
+                _csharpProjectItemsEvents.ItemRemoved += ProjectItemsEvents_ItemRemoved;
+                _csharpProjectItemsEvents.ItemRenamed += ProjectItemsEvents_ItemRenamed;
             }
             catch (Exception exev)
             {
@@ -345,19 +352,19 @@ namespace Recoding.ClippyVSPackage
         private void DocEvents_DocumentClosing(Document document)
         {
             if (_showMerlin)
-                Merlin.StartAnimation(MerlinAnimations.GestureDown, true);
+                Merlin.StartAnimation(MerlinAnimations.Decline, true);
 
             else if (_showGenius)
-                Genius.StartAnimation(GeniusAnimations.GestureDown);
+                Genius.StartAnimation(GeniusAnimations.EmptyTrash);
             else
-                Clippy.StartAnimation(ClippyAnimation.GestureDown, true);
+                Clippy.StartAnimation(ClippyAnimation.GoodBye, true);
 
         }
 
         private void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
             if (_showMerlin)
-                Merlin.StartAnimation(MerlinAnimations.Processing, true); // GetTechy
+                Merlin.StartAnimation(MerlinAnimations.DoMagic1, true); // GetTechy
 
             else if (_showGenius)
                 Genius.StartAnimation(GeniusAnimations.GetTechy);
@@ -440,7 +447,7 @@ namespace Recoding.ClippyVSPackage
         }
 
 
-        private async void cmdClose_Click(object sender, RoutedEventArgs e)
+        private async void CmdClose_Click(object sender, RoutedEventArgs e)
         {
             var window = this;
 
@@ -480,7 +487,7 @@ namespace Recoding.ClippyVSPackage
         }
 
 
-        private void cmdTestAnimation_Click(object sender, RoutedEventArgs e)
+        private void CmdTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
