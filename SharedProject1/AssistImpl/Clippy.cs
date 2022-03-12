@@ -84,7 +84,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void RegisterAnimations()
         {
-            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
+            _animations = RegisterAnimationsImpl(AnimationsResourceUri, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
         }
 
         /// <summary>

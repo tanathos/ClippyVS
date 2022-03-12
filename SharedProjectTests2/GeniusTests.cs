@@ -5,7 +5,7 @@ using SharedProject1.AssistImpl;
 namespace SharedProjectTests2
 {
     [TestClass]
-    public class UnitTest1
+    public class GeniusTests
     {
         [TestMethod]
         public void TestMethod1()

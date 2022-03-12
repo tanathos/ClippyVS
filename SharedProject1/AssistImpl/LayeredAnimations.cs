@@ -19,7 +19,7 @@ namespace SharedProject1.AssistImpl
             Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer1, ObjectAnimationUsingKeyFrames visibility1,
             int animMaxLayers)
         {
-            _animations.Add(new LayeredAnimation(animName, layer0, visibility0, layer1, visibility1, animMaxLayers));
+            _animations.Add(new LayeredAnimation(animName, layer0, layer1, visibility1, animMaxLayers));
             Debug.WriteLine("Added animation");
         }
 

@@ -11,6 +11,7 @@ using Microsoft.VisualStudio;
 using System.Runtime.InteropServices;
 using System.Linq;
 using SharedProject1;
+using SharedProjectTests2.Commands;
 using Task = System.Threading.Tasks.Task;
 
 namespace Recoding.ClippyVSPackage

@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.Shell;
-using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
 using System.Windows.Controls;
@@ -86,7 +85,7 @@ MerlinAnimations.Idle1_2};
         /// </summary>
         private void RegisterAnimations()
         {
-            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
+            _animations = RegisterAnimationsImpl(AnimationsResourceUri, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
         }
 
         /// <summary>

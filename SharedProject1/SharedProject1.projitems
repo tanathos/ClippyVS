@@ -9,18 +9,18 @@
     <Import_RootNamespace>SharedProject1</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AssistantBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\AssistantBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\Genius.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\LayeredAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\LayeredAnimations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\Merlin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Clippy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssistImpl\Clippy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClippyVSPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClippyVSSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommandGenius.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Command1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Command2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Configurations\Animation.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\Command1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\Command2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippySingleAnimation.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippyAnimation.cs" />
@@ -85,5 +85,8 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Commands\" />
   </ItemGroup>
 </Project>

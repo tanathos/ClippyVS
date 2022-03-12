@@ -83,9 +83,12 @@ namespace Recoding.ClippyVSPackage
             canvas.Children.Add(ClippedImage);
         }
 
-        protected void RegisterAnimationsImpl(string animationsResourceUri, ref Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> animations, EventHandler xDoubleAnimationCompleted, int clipWidth, int clipHeight)
+        protected Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> RegisterAnimationsImpl(string animationsResourceUri,
+           
+            EventHandler xDoubleAnimationCompleted, int clipWidth, int clipHeight)
         {
             var spResUri = animationsResourceUri;
+            var animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
 
 #if Dev19
             spResUri = spResUri.Replace("ClippyVs2022", "ClippyVSPackage");
@@ -95,15 +98,13 @@ namespace Recoding.ClippyVSPackage
             var info = Application.GetResourceStream(uri);
 
             if (info == null)
-                return;
+                return animations;
 
             // Can go to Constructor/Init
             var storedAnimations =
                 Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClippySingleAnimation>>(StreamToString(info.Stream));
-
-            animations = new Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>>();
-
-            if (storedAnimations == null) return;
+            
+            if (storedAnimations == null) return animations;
 
             foreach (var animation in storedAnimations)
             {
@@ -140,7 +141,9 @@ namespace Recoding.ClippyVSPackage
 
                 animations.Add(animation.Name, new Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>(xDoubleAnimation, yDoubleAnimation));
                 xDoubleAnimation.Completed += xDoubleAnimationCompleted;
+               
             }
+            return animations;
         }
     }
 }
