@@ -82,31 +82,28 @@ GeniusAnimations.Idle9};
         /// </summary>
         public Genius(Panel canvas, Panel canvas1)
         {
+            if (canvas == null) return;
+
             InitAssistant(canvas, SpriteResourceUri);
+            // Might not be required XXX
+            ClippedImage.Visibility = Visibility.Visible;
 
             _clippedImage1 = new Image
             {
                 Source = Sprite,
-                Stretch = Stretch.None
+                Stretch = Stretch.None,
+                Visibility = Visibility.Collapsed
             };
-
-            ClippedImage.Visibility = Visibility.Visible;
-            _clippedImage1.Visibility = Visibility.Collapsed;
-
-            if (canvas == null) return;
-
-            canvas.Children.Clear();
-            canvas.Children.Add(ClippedImage);
-            //canvas.Effect = new BlurEffect();
+    
+            //canvas.Children.Clear();
+            //canvas.Children.Add(ClippedImage);
 
             canvas1.Children.Clear();
             canvas1.Children.Add(_clippedImage1);
-            //canvas1.Effect = new DropShadowEffect();
 
             if (_animations == null)
                 RegisterAnimations();
 
-            //XX Requires testing..
             AllAnimations = new List<GeniusAnimations>();
             var values = Enum.GetValues(typeof(GeniusAnimations));
             AllAnimations.AddRange(values.Cast<GeniusAnimations>());
@@ -117,7 +114,7 @@ GeniusAnimations.Idle9};
         /// <summary>
         /// Registers all the animation definitions into a static property
         /// </summary>
-        private void RegisterAnimations()
+        protected void RegisterAnimations()
         {
             var storedAnimations = ParseAnimDescriptions();
             if (storedAnimations == null) return;
@@ -196,6 +193,11 @@ GeniusAnimations.Idle9};
                 if (frame.ImagesOffsets.Count > animationMaxLayers)
                 {
                     animationMaxLayers = frame.ImagesOffsets.Count;
+                }
+
+                if (frame.branching != null && frame.branching.branches != null)
+                {
+                    Debug.WriteLine("Has Branching Info");
                 }
 
                 for (var layerNum = 0; layerNum < frame.ImagesOffsets.Count; layerNum++)

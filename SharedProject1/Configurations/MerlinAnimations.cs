@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SharedProject1.Configurations
+﻿namespace SharedProject1.Configurations
 {
     public enum MerlinAnimations
     {

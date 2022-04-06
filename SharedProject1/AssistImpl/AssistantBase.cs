@@ -60,6 +60,12 @@ namespace Recoding.ClippyVSPackage
             WpfAnimationsDispatcher?.Stop();
         }
 
+
+        /// <summary>
+        /// Watch out, only supports single layer/image for now 
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <param name="spriteResourceUri"></param>
         protected void InitAssistant(Panel canvas, string spriteResourceUri)
         {
             // ReSharper disable once RedundantAssignment
@@ -69,6 +75,7 @@ namespace Recoding.ClippyVSPackage
 #endif
 #if Dev22
 #endif
+            // pass BitmapImage
             this.Sprite = new BitmapImage(new Uri(spResUri, UriKind.RelativeOrAbsolute));
 
             ClippedImage = new Image

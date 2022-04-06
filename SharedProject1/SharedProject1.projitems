@@ -23,7 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippySingleAnimation.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippyAnimation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Configurations\ClippyAnimations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\ColumnRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\Frame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Configurations\GeniusAnimations.cs" />
