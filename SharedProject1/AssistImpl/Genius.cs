@@ -6,17 +6,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Linq;
 using Recoding.ClippyVSPackage;
 using System.Diagnostics;
 using System.Windows.Resources;
-using Microsoft.VisualStudio.PlatformUI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Recoding.ClippyVSPackage.Configurations.Legacy;
 using Frame = Recoding.ClippyVSPackage.Configurations.Legacy.Frame;
+using SharedProject1.Configurations;
 
 namespace SharedProject1.AssistImpl
 {
@@ -83,50 +82,39 @@ GeniusAnimations.Idle9};
         /// </summary>
         public Genius(Panel canvas, Panel canvas1)
         {
+            if (canvas == null) return;
+
             InitAssistant(canvas, SpriteResourceUri);
+            // Might not be required XXX
+            ClippedImage.Visibility = Visibility.Visible;
 
             _clippedImage1 = new Image
             {
                 Source = Sprite,
-                Stretch = Stretch.None
+                Stretch = Stretch.None,
+                Visibility = Visibility.Collapsed
             };
-
-            ClippedImage.Visibility = Visibility.Visible;
-            _clippedImage1.Visibility = Visibility.Collapsed;
-
-            if (canvas == null) return;
-
-            canvas.Children.Clear();
-            canvas.Children.Add(ClippedImage);
-            //canvas.Effect = new BlurEffect();
+    
+            //canvas.Children.Clear();
+            //canvas.Children.Add(ClippedImage);
 
             canvas1.Children.Clear();
             canvas1.Children.Add(_clippedImage1);
-            //canvas1.Effect = new DropShadowEffect();
-
-            canvas.AddPropertyChangeHandler(Canvas.LeftProperty, LeftPropChangedHandler);
-            canvas1.AddPropertyChangeHandler(Canvas.LeftProperty, LeftPropChangedHandler);
-
 
             if (_animations == null)
                 RegisterAnimations();
 
-            //XX Requires testing..
             AllAnimations = new List<GeniusAnimations>();
             var values = Enum.GetValues(typeof(GeniusAnimations));
             AllAnimations.AddRange(values.Cast<GeniusAnimations>());
             RegisterIdleRandomAnimations();
         }
 
-        private void LeftPropChangedHandler(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         /// <summary>
         /// Registers all the animation definitions into a static property
         /// </summary>
-        private void RegisterAnimations()
+        protected void RegisterAnimations()
         {
             var storedAnimations = ParseAnimDescriptions();
             if (storedAnimations == null) return;
@@ -207,6 +195,11 @@ GeniusAnimations.Idle9};
                     animationMaxLayers = frame.ImagesOffsets.Count;
                 }
 
+                if (frame.branching != null && frame.branching.branches != null)
+                {
+                    Debug.WriteLine("Has Branching Info");
+                }
+
                 for (var layerNum = 0; layerNum < frame.ImagesOffsets.Count; layerNum++)
                 {
                     Debug.WriteLine("Processing Overlay " + layerNum);
@@ -265,10 +258,6 @@ GeniusAnimations.Idle9};
             return animationMaxLayers;
         }
 
-        private void YKeyFrame_Changed(object sender, EventArgs e)
-        {
-            Debug.WriteLine("Keyframe changed!");
-        }
 
         private static List<GeniusSingleAnimation> ParseAnimDescriptions()
         {
@@ -388,7 +377,7 @@ GeniusAnimations.Idle9};
 
                     _clippedImage1.BeginAnimation(Canvas.LeftProperty, animation.Layer1.Item1);
                     _clippedImage1.BeginAnimation(Canvas.TopProperty, animation.Layer1.Item2);
-                    _clippedImage1.BeginAnimation(Image.OpacityProperty, animation.Visibility1);
+                    _clippedImage1.BeginAnimation(UIElement.OpacityProperty, animation.Visibility1);
                 }
             }
             catch (Exception)
@@ -397,65 +386,4 @@ GeniusAnimations.Idle9};
             }
         }
     }
-
-    public class LayeredAnimation
-    {
-        public readonly string Name;
-        public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> Layer0;
-        public readonly ObjectAnimationUsingKeyFrames Visibility0;
-        public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> Layer1;
-        public readonly ObjectAnimationUsingKeyFrames Visibility1;
-        public readonly int MaxLayers;
-
-        public LayeredAnimation(string name, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer0,
-            ObjectAnimationUsingKeyFrames visibility0, 
-            Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer1,
-            ObjectAnimationUsingKeyFrames visibility1,
-            int animMaxLayers)
-        {
-            Name = name;
-            Layer0 = layer0;
-            Visibility0 = visibility0;
-            Layer1 = layer1;
-            Visibility1 = visibility1;
-            MaxLayers = animMaxLayers;
-            
-        }
-    }
-
-    public class LayeredAnimations
-    {
-        private readonly List<LayeredAnimation> _animations;
-
-        public LayeredAnimations(int capacity)
-        {
-            _animations = new List<LayeredAnimation>(capacity);
-        }
-
-        public void Add(string animName, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer0, ObjectAnimationUsingKeyFrames visibility0,
-            Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> layer1, ObjectAnimationUsingKeyFrames visibility1,
-            int animMaxLayers)
-        {
-            _animations.Add(new LayeredAnimation(animName, layer0, visibility0, layer1, visibility1, animMaxLayers));
-            Debug.WriteLine("Added animation");
-        }
-
-        public LayeredAnimation this[string animName]
-        {
-            get
-            {
-                return _animations.First(animation => animation.Name.Equals(animName));
-            }
-        }
-    }
-
-    //public class OverlayAnimationFrames
-    //{
-    //    public readonly Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> KeyFrames;
-
-    //    public OverlayAnimationFrames(Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames> xyKeyFrames)
-    //    {
-    //        KeyFrames = xyKeyFrames;
-    //    }
-    //}
 }

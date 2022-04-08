@@ -14,7 +14,7 @@ using System.Diagnostics;
 namespace Recoding.ClippyVSPackage
 {
     /// <summary>
-    /// The core object that represents Clippy and its animations
+    /// The core object that represents Clippy and its animationses
     /// </summary>
     public class Clippy : AssistantBase
     {
@@ -25,7 +25,7 @@ namespace Recoding.ClippyVSPackage
         private static readonly string SpriteResourceUri = "pack://application:,,,/ClippyVs2022;component/clippy.png";
 
         /// <summary>
-        /// The URI for the animations json definition
+        /// The URI for the animationses json definition
         /// </summary>
         //private static string animationsResourceUri = "pack://application:,,,/ClippyVSPackage;component/animations.json";
         private static readonly string AnimationsResourceUri = "pack://application:,,,/ClippyVs2022;component/animations.json";
@@ -41,27 +41,27 @@ namespace Recoding.ClippyVSPackage
         public static int ClipWidth => 124;
 
         /// <summary>
-        /// The list of all the available animations
+        /// The list of all the available animationses
         /// </summary>
-        public List<ClippyAnimation> AllAnimations { get; } = new List<ClippyAnimation>();
+        public List<ClippyAnimations> AllAnimations { get; } = new List<ClippyAnimations>();
 
         /// <summary>
-        /// The list of couples of Columns/Rows double animations
+        /// The list of couples of Columns/Rows double animationses
         /// </summary>
         private static Dictionary<string, Tuple<DoubleAnimationUsingKeyFrames, DoubleAnimationUsingKeyFrames>> _animations;
 
         /// <summary>
-        /// All the animations that represents an Idle state
+        /// All the animationses that represents an Idle state
         /// </summary>
-        private static readonly List<ClippyAnimation> IdleAnimations = new List<ClippyAnimation>() {
-            ClippyAnimation.Idle11,
-            ClippyAnimation.IdleRopePile,
-            ClippyAnimation.IdleAtom,
-            ClippyAnimation.IdleEyeBrowRaise,
-            ClippyAnimation.IdleFingerTap,
-            ClippyAnimation.IdleHeadScratch,
-            ClippyAnimation.IdleSideToSide,
-            ClippyAnimation.IdleSnooze };
+        private static readonly List<ClippyAnimations> IdleAnimations = new List<ClippyAnimations>() {
+            ClippyAnimations.Idle11,
+            ClippyAnimations.IdleRopePile,
+            ClippyAnimations.IdleAtom,
+            ClippyAnimations.IdleEyeBrowRaise,
+            ClippyAnimations.IdleFingerTap,
+            ClippyAnimations.IdleHeadScratch,
+            ClippyAnimations.IdleSideToSide,
+            ClippyAnimations.IdleSnooze };
 
         /// <summary>
         /// Default ctor
@@ -73,9 +73,9 @@ namespace Recoding.ClippyVSPackage
             if (_animations == null)
                 RegisterAnimations();
 
-            AllAnimations = new List<ClippyAnimation>();
-            var values = Enum.GetValues(typeof(ClippyAnimation));
-            AllAnimations.AddRange(values.Cast<ClippyAnimation>());
+            AllAnimations = new List<ClippyAnimations>();
+            var values = Enum.GetValues(typeof(ClippyAnimations));
+            AllAnimations.AddRange(values.Cast<ClippyAnimations>());
             RegisterIdleRandomAnimations();
         }
 
@@ -84,7 +84,7 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         private void RegisterAnimations()
         {
-            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, xDoubleAnimation_Completed, ClipWidth, ClipHeight);
+            _animations = RegisterAnimationsImpl(AnimationsResourceUri, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
         }
 
         /// <summary>
@@ -92,13 +92,13 @@ namespace Recoding.ClippyVSPackage
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void xDoubleAnimation_Completed(object sender, EventArgs e)
+        void XDoubleAnimation_Completed(object sender, EventArgs e)
         {
             IsAnimating = false;
         }
 
         /// <summary>
-        /// Registers a function to perform a subset of animations randomly (the idle ones)
+        /// Registers a function to perform a subset of animationses randomly (the idle ones)
         /// </summary>
         private void RegisterIdleRandomAnimations()
         {
@@ -119,33 +119,33 @@ namespace Recoding.ClippyVSPackage
             StartAnimation(IdleAnimations[randomInt]);
         }
 
-        public void StartAnimation(ClippyAnimation animations, bool byPassCurrentAnimation = false)
+        public void StartAnimation(ClippyAnimations animationses, bool byPassCurrentAnimation = false)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(
                 async delegate
                 {
-                    await StartAnimationAsync(animations, byPassCurrentAnimation);
+                    await StartAnimationAsync(animationses, byPassCurrentAnimation);
                 });
         }
 
         /// <summary>
         /// Start a specific animation
         /// </summary>
-        /// <param name="animationType"></param>
+        /// <param name="animationsType"></param>
         /// <param name="byPassCurrentAnimation"></param>
-        public async Task StartAnimationAsync(ClippyAnimation animationType, bool byPassCurrentAnimation = false)
+        public async Task StartAnimationAsync(ClippyAnimations animationsType, bool byPassCurrentAnimation = false)
         {
             if (!IsAnimating || byPassCurrentAnimation)
             {
                 IsAnimating = true;
                 await Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                if (_animations.ContainsKey(animationType.ToString()))
+                if (_animations.ContainsKey(animationsType.ToString()))
                 {
-                    ClippedImage.BeginAnimation(Canvas.LeftProperty, _animations[animationType.ToString()].Item1);
-                    ClippedImage.BeginAnimation(Canvas.TopProperty, _animations[animationType.ToString()].Item2);
+                    ClippedImage.BeginAnimation(Canvas.LeftProperty, _animations[animationsType.ToString()].Item1);
+                    ClippedImage.BeginAnimation(Canvas.TopProperty, _animations[animationsType.ToString()].Item2);
                 } else
                 {
-                    Debug.WriteLine("Animation {0} not found!", animationType.ToString());
+                    Debug.WriteLine("Animation {0} not found!", animationsType.ToString());
                 }
             }
 

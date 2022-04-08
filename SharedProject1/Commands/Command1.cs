@@ -1,16 +1,21 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Recoding.ClippyVSPackage;
-using System;
+﻿using System;
 using System.ComponentModel.Design;
+using System.Globalization;
+using System.Windows.Forms;
+using Microsoft.VisualStudio.Shell;
+using Task = System.Threading.Tasks.Task;
 
-namespace SharedProject1
+namespace SharedProjectTests2.Commands
 {
-    internal sealed class Command2
+    /// <summary>
+    /// Command handler
+    /// </summary>
+    internal sealed class Command1
     {
         /// <summary>
         /// Command ID.
         /// </summary>
-        private const int CommandId = 4130;
+        private const int CommandId = 4129;
 
         /// <summary>
         /// Command menu group (command set GUID).
@@ -18,44 +23,31 @@ namespace SharedProject1
         private static readonly Guid CommandSet = new Guid("fbed79a9-1faa-4dc3-9f96-9fb39d31bfdb");
 
         /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly AsyncPackage _package;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Command2"/> class.
+        /// Initializes a new instance of the <see cref="Command1"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
-        /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private Command2(AsyncPackage package, OleMenuCommandService commandService)
+        private Command1(OleMenuCommandService commandService)
         {
-            _package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
-            var menuItem = new MenuCommand(this.Execute, menuCommandId);
+            var menuItem = new MenuCommand(Execute, menuCommandId);
             commandService.AddCommand(menuItem);
         }
-
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private IAsyncServiceProvider ServiceProvider => _package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static async System.Threading.Tasks.Task InitializeAsync(AsyncPackage package)
+        public static async Task InitializeAsync(AsyncPackage package)
         {
-            // Switch to the main thread - the call to AddCommand in Command2's constructor requires
+            // Switch to the main thread - the call to AddCommand in Command1's constructor requires
             // the UI thread.
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+            //await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            _ = new Command2(package, commandService);
+            _ = new Command1(commandService);
         }
 
         /// <summary>
@@ -68,8 +60,11 @@ namespace SharedProject1
         private void Execute(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            ((ClippyVisualStudioPackage)_package).ReviveMerlinCommand();
+            string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
+            string title = "Command1";
+
+            // Show a message box to prove we were here
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
-
 }

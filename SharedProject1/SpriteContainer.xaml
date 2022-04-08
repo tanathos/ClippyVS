@@ -14,7 +14,7 @@
         <ContextMenu x:Key="CmButton">
             <MenuItem x:Name="cmdRandom" Header="Surprise me" Click="cmdRandom_Click" />
             <Separator />
-            <MenuItem x:Name="cmdClose" Header="Please, leave me alone" Click="cmdClose_Click"  />
+            <MenuItem x:Name="cmdClose" Header="Please, leave me alone" Click="CmdClose_Click"  />
             <Separator />
         </ContextMenu>
     </Window.Resources>

@@ -1,16 +1,13 @@
 ﻿using Microsoft.VisualStudio.Shell;
-using Recoding.ClippyVSPackage.Configurations;
 using System;
 using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Linq;
 using Recoding.ClippyVSPackage;
 using System.Diagnostics;
+using SharedProject1.Configurations;
 
 namespace SharedProject1.AssistImpl
 {
@@ -44,7 +41,7 @@ namespace SharedProject1.AssistImpl
         /// <summary>
         /// The list of all the available animations
         /// </summary>
-        public List<MerlinAnimations> AllAnimations { get; } = new List<MerlinAnimations>();
+        public List<MerlinAnimations> AllAnimations { get; }
 
         /// <summary>
         /// The list of couples of Columns/Rows double animations
@@ -88,7 +85,7 @@ MerlinAnimations.Idle1_2};
         /// </summary>
         private void RegisterAnimations()
         {
-            RegisterAnimationsImpl(AnimationsResourceUri, ref _animations, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
+            _animations = RegisterAnimationsImpl(AnimationsResourceUri, XDoubleAnimation_Completed, ClipWidth, ClipHeight);
         }
 
         /// <summary>
